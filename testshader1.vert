@@ -18,6 +18,11 @@ varying float intensity;
 varying float height;
 varying int isWater;
 
+varying vec4 V; //vertex
+varying vec4 E; //eye
+varying vec3 N; //surface normal
+
+
 void main(){
 	//get the position
 	vec4 vertCopy = gl_Vertex;
@@ -27,9 +32,17 @@ void main(){
 		vertCopy.z = sea_level;
 		gl_Normal = vec4(0.0, 0.0, 1.0, 0.0);
 		isWater = 1;
+		
+		V = gl_ModelViewMatrix * gl_Vertex;
+		E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, -1.0, 0.0);
+		N = normalize(gl_NormalMatrix * gl_Normal);
 	}
 	else{
 		isWater = 0;
+		
+		V = vec4(0.0, 0.0, 0.0, 0.0);
+		E = vec4(0.0, 0.0, 0.0, 0.0);
+		N = vec3(0.0, 0.0, 0.0);
 	}
 	
 	gl_Position = gl_ModelViewProjectionMatrix * vertCopy;
