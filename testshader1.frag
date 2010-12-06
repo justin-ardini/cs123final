@@ -1,4 +1,5 @@
 //uniform variables
+uniform sampler2D bumpmap;
 uniform sampler2D region1ColorMap;
 uniform sampler2D region2ColorMap;
 uniform sampler2D region3ColorMap;
@@ -56,7 +57,8 @@ void main(){
 		
 		//mix the two colors
 		//gl_FragColor = mix(mat_color, env_color, F);
-		gl_FragColor = mat_color;
+		//gl_FragColor = mat_color;
+		gl_FragColor = texture2D(region3ColorMap, gl_TexCoord[0].st);
 	}
 	
 	//if not

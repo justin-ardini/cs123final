@@ -1,5 +1,6 @@
 //uniform variables
-uniform float sea_level; 
+uniform float sea_level;
+uniform sampler2D bumpmap;
 uniform sampler2D region1ColorMap;
 uniform sampler2D region2ColorMap;
 uniform sampler2D region3ColorMap;
@@ -29,6 +30,8 @@ void main(){
 	
 	//check to see if the position is below the sea level
 	if(vertCopy.z <= sea_level){
+		vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
+		
 		vertCopy.z = sea_level;
 		gl_Normal = vec4(0.0, 0.0, 1.0, 0.0);
 		isWater = 1;
