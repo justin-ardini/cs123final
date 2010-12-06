@@ -54,6 +54,8 @@ public:
     void fillSquare(float2 tlg, float2 brg, int depth);
     double getPerturb(int cur_depth);
     void populateNormals();
+    void updateTerrainShaderParameters(QGLShaderProgram *shader);
+    void render();
 
     float2 wrap(float2 val);
     bool isMultiple(int val);

@@ -63,6 +63,7 @@ protected:
     GLuint load_cube_map(QList<QFile *> files);
     void create_fbos(int w, int h);
     void create_blur_kernel(int radius,int w,int h,GLfloat* kernel,GLfloat* offsets);
+    void render_terrain();
 
     //member variables
     QHash<QString, QGLShaderProgram *> shader_programs_; ///hash map of all shader programs
