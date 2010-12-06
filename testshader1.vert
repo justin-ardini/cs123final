@@ -28,17 +28,20 @@ void main(){
 	//get the position
 	vec4 vertCopy = gl_Vertex;
 	
+	//get the norm of the vertex
+	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
+	
 	//check to see if the position is below the sea level
 	if(vertCopy.z <= sea_level){
 		vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
 		
 		vertCopy.z = sea_level;
-		gl_Normal = vec4(0.0, 0.0, 1.0, 0.0);
+		vertexNorm = gl_NormalMatrix * vec3(0.0, 0.0, 1.0);
 		isWater = 1;
 		
 		V = gl_ModelViewMatrix * gl_Vertex;
 		E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, -1.0, 0.0);
-		N = normalize(gl_NormalMatrix * gl_Normal);
+		N = normalize(vertexNorm);
 	}
 	else{
 		isWater = 0;
@@ -50,8 +53,7 @@ void main(){
 	
 	gl_Position = gl_ModelViewProjectionMatrix * vertCopy;
 	
-	//get the norm of the vertex
-	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
+	
 	vec3 normalizedNorm = normalize(vertexNorm);
 	
 	//get the light direction

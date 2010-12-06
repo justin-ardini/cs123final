@@ -242,14 +242,15 @@ void DrawEngine::load_shaders() {
 void DrawEngine::load_textures() {
     cout << "\033[1mLoading textures...\033[0m" << endl;
     QList<QFile *> fileList;
-    /*
+
     // Alpine
+    /*
     fileList.append(new QFile("textures/alpine/alpine_west.bmp"));
     fileList.append(new QFile("textures/alpine/alpine_east.bmp"));
     fileList.append(new QFile("textures/alpine/alpine_up.bmp"));
     fileList.append(new QFile("textures/alpine/alpine_down.bmp"));
     fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_north.bmp")); */
+    fileList.append(new QFile("textures/alpine/alpine_north.bmp"));*/
     /*
     // Lagoon
     fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
@@ -266,7 +267,7 @@ void DrawEngine::load_textures() {
     fileList.append(new QFile("textures/hourglass/hourglass_down.bmp"));
     fileList.append(new QFile("textures/hourglass/hourglass_south.bmp"));
     fileList.append(new QFile("textures/hourglass/hourglass_north.bmp")); */
-    // Islands
+    // Island
     fileList.append(new QFile("textures/islands/islands_west.bmp"));
     fileList.append(new QFile("textures/islands/islands_east.bmp"));
     fileList.append(new QFile("textures/islands/islands_up.bmp"));

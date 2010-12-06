@@ -1,4 +1,7 @@
 //uniform variables
+uniform samplerCube CubeMap;
+
+uniform sampler2D bumpmap;
 uniform sampler2D region1ColorMap;
 uniform sampler2D region2ColorMap;
 uniform sampler2D region3ColorMap;
@@ -15,48 +18,29 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
-varying float isWater;
+varying int isWater;
 
 varying vec4 V; //vertex
 varying vec4 E; //eye
 varying vec3 N; //surface normal
 
-//constants
-const vec3 L = vec3(0.0, 0.0, 1.0); //light direction
-const vec4 diff = vec4(0.0, 0.0, 1.0, 0.0); //diffuse material color
-const vec4 spec = vec4(0.7, 0.7, 0.7, 0.0); //specular material color
-const float spec_pow = 20.0; //specular exponent
-
 void main(){
 	//if it is water
-	if (isWater == 1.0) {
+	if(isWater == 1){
 		//normalize the normal
 		vec3 Nn = normalize(N);
-		
-		//get the diffuse coefficient
-		float kd = max(0.0, dot(Nn, L));
 		
 		//get the incoming vector
 		vec3 I = normalize(V.xyz - E.xyz);
 		
-		//get the half vector
-		vec3 H = normalize(L - I);
-		
-		//get the specular coefficent
-		float ks = dot(Nn, H);
-		
-		//get the material color
-		vec4 mat_color = (kd * diff * intensity) + (max(pow(ks, spec_pow), 0.0) * spec);
-		
 		//get the reflected vector around the surface normal
-		//vec3 R = reflect(I, Nn);
+		vec3 R = reflect(I, Nn);
 		
 		//get the environment color
-		//vec4 env_color = textureCube(CubeMap, R);
+		vec4 env_color = textureCube(CubeMap, R);
 		
 		//mix the two colors
-		//gl_FragColor = mix(mat_color, env_color, F);
-		gl_FragColor = mat_color;
+		gl_FragColor = mix(env_color, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
 	}
 	
 	//if not
