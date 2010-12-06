@@ -43,11 +43,49 @@ extern "C"{
 DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context) {
     //initialize ogl settings
     glEnable(GL_TEXTURE_2D);
+
+    glEnable(GL_POLYGON_SMOOTH); //Enable smoothing
+
+    glShadeModel(GL_SMOOTH); //Smooth or flat shading model
+    // glShadeModel(GL_FLAT);
+    glPolygonMode(GL_FRONT, GL_FILL); //Shaded mode
+    glPolygonMode(GL_BACK, GL_FILL);
+
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+    glEnable(GL_TEXTURE_2D);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    /*
+    // Setup Global Lighting
+    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f }; //OpenGL defaults to 0.2, 0.2, 0.2, 1.0
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
+
+    // Setup Local Lighting
+
+    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
+    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
+    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+    GLfloat position[] = { 0, 10, 5, 1.0f };
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+    glLightfv(GL_LIGHT0, GL_POSITION, position);
+
+    glClearColor(0, 0, 0, 0); //Set the color to clear buffers to
+
+    glEnable(GL_LIGHTING); //Enable lighting
+    glEnable(GL_LIGHT0);
+    */
+
     glFrontFace(GL_CCW);
     glDisable(GL_DITHER);
     glDisable(GL_LIGHTING);
-    glShadeModel(GL_FLAT);
     glClearColor(0.0f,0.0f,0.0f,0.0f);
+
+
     //init member variables
     previous_time_ = 0.0f;
     camera_.center.x = 0.f,camera_.center.y = 0.f,camera_.center.z = 0.f;
@@ -102,7 +140,7 @@ DrawEngine::~DrawEngine() {
 **/
 void DrawEngine::load_models() {
     cout << "\033[1mLoading models...\033[0m" << endl;
-    models_["dragon"].model = glmReadOBJ("/home/jardini/course/cs123_labs/lab09/src/models/xyzrgb_dragon.obj");
+    /* models_["dragon"].model = glmReadOBJ("/home/jardini/course/cs123_labs/lab09/src/models/xyzrgb_dragon.obj");
     glmUnitize(models_["dragon"].model);
     models_["dragon"].idx = glmList(models_["dragon"].model,GLM_SMOOTH);
     cout << "\t \033[32m/course/cs123/data/mesh/xyzrgb_dragon_old.obj\033[0m" << endl;
@@ -120,6 +158,7 @@ void DrawEngine::load_models() {
     }
     glEndList();
     cout << "\t \033[32mgrid compiled\033[0m" << endl;
+    */
     models_["skybox"].idx = glGenLists(1);
     glNewList(models_["skybox"].idx,GL_COMPILE);
     //Be glad we wrote this for you...ugh.
@@ -184,6 +223,16 @@ void DrawEngine::load_shaders() {
                                                        "shaders/blur.frag");
     shader_programs_["blur"]->link();
     cout << "\t \033[32mshaders/blur\033[0m" << endl;
+
+
+    shader_programs_["terrain"] = new QGLShaderProgram(context_);
+    shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                         "shaders/testshader1.vert");
+    shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                         "shaders/testshader1.frag");
+    shader_programs_["terrain"]->link();
+    cout << "\t \033[32mshaders/terrain\033[0m" << endl;
+
 }
 
 /**
@@ -193,12 +242,37 @@ void DrawEngine::load_shaders() {
 void DrawEngine::load_textures() {
     cout << "\033[1mLoading textures...\033[0m" << endl;
     QList<QFile *> fileList;
-    fileList.append(new QFile("textures/astra/posx.jpg"));
-    fileList.append(new QFile("textures/astra/negx.jpg"));
-    fileList.append(new QFile("textures/astra/posy.jpg"));
-    fileList.append(new QFile("textures/astra/negy.jpg"));
-    fileList.append(new QFile("textures/astra/posz.jpg"));
-    fileList.append(new QFile("textures/astra/negz.jpg"));
+    /*
+    // Alpine
+    fileList.append(new QFile("textures/alpine/alpine_west.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_east.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_up.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_down.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_north.bmp")); */
+    /*
+    // Lagoon
+    fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_east.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_up.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_down.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_south.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_north.bmp")); */
+    /*
+    // Hourglass
+    fileList.append(new QFile("textures/hourglass/hourglass_west.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_east.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_up.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_down.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_south.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_north.bmp")); */
+    // Islands
+    fileList.append(new QFile("textures/islands/islands_west.bmp"));
+    fileList.append(new QFile("textures/islands/islands_east.bmp"));
+    fileList.append(new QFile("textures/islands/islands_up.bmp"));
+    fileList.append(new QFile("textures/islands/islands_down.bmp"));
+    fileList.append(new QFile("textures/islands/islands_south.bmp"));
+    fileList.append(new QFile("textures/islands/islands_north.bmp"));
 
     GLuint terrainTextures[4];
     terrainTextures[0] = load_texture(TERRAIN_TEX0);
@@ -291,7 +365,7 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 
 **/
 void DrawEngine::draw_frame(float time,int w,int h) {
-    fps_ = 1000.f / (time - previous_time_),previous_time_ = time;
+    fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
     //Render the scene to a framebuffer
     framebuffer_objects_["fbo_0"]->bind();
     perspective_camera(w,h);
@@ -302,13 +376,13 @@ void DrawEngine::draw_frame(float time,int w,int h) {
                                                    QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
                                                    QRect(0,0,w,h),GL_COLOR_BUFFER_BIT,GL_NEAREST);
 
+
     // Step 0: Draw the scene
     orthogonal_camera(w, h);
     glBindTexture(GL_TEXTURE_2D, framebuffer_objects_[ "fbo_1"]->texture());
     textured_quad(w, h, true);
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Step 1
+    /*
     // bind everything
     framebuffer_objects_["fbo_2"]->bind(); // bind fb2
     shader_programs_["brightpass"]->bind(); // bind brightpass
@@ -319,7 +393,8 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     shader_programs_["brightpass"]->release();
     glBindTexture(GL_TEXTURE_2D, 0);
     framebuffer_objects_["fbo_2"]->release();
-
+    */
+    /*
     //Uncomment this section in step 2 of the lab...
     float scales[] = {4.f,8.f,16.f,32.f};
     for(int i = 0; i < 4; ++i) {
@@ -334,7 +409,10 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glDisable(GL_BLEND);
         glBindTexture(GL_TEXTURE_2D,0);
      }
+    */
 }
+
+
 
 /**
   @paragraph Should run a gaussian blur on the texture stored in
@@ -379,27 +457,37 @@ void DrawEngine::render_scene(float time,int w,int h) {
     glEnable(GL_TEXTURE_CUBE_MAP);
     glBindTexture(GL_TEXTURE_CUBE_MAP,textures_["cube_map_1"]);
     glCallList(models_["skybox"].idx);
+
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+
+    // set the uniform values for the terrain shader
+    shader_programs_["terrain"]->bind();
+    terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
+    glPushMatrix();
+    glTranslatef(0, -15.f, 0.f);
+    glRotatef(270, 1, 0, 0);
+    glScalef(2.5, 2.5, 2.5);
+    terrain_->render();
+    glPopMatrix();
+    shader_programs_["terrain"]->release();
+
     glActiveTexture(GL_TEXTURE0);
+
     shader_programs_["refract"]->bind();
     shader_programs_["refract"]->setUniformValue("CubeMap",GL_TEXTURE0);
-    glPushMatrix();
-    glTranslatef(-1.25f,0.f,0.f);
-    glCallList(models_["dragon"].idx);
-    glPopMatrix();
     shader_programs_["refract"]->release();
+
     shader_programs_["reflect"]->bind();
     shader_programs_["reflect"]->setUniformValue("CubeMap",GL_TEXTURE0);
-    glPushMatrix();
-    glTranslatef(1.25f,0.f,0.f);
-    glCallList(models_["dragon"].idx);
-    glPopMatrix();
     shader_programs_["reflect"]->release();
+
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     glDisable(GL_TEXTURE_CUBE_MAP);
 }
+
 
 /**
   @paragraph Draws a textured quad. The texture most be bound and unbound

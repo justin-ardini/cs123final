@@ -23,21 +23,21 @@ Terrain::~Terrain() {
 /**
   adds uniform variables for terrain shader stuff, you need to fill this in for the terrain shader
   **/
-/*void GLWidget::UpdateTerrainShaderParameters()
-{
-    mShaderProgram->setUniformValue("region0ColorMap", g_regions[0].texture);
-    mShaderProgram->setUniformValue("region1ColorMap", g_regions[1].texture);
-    mShaderProgram->setUniformValue("region2ColorMap", g_regions[2].texture);
-    mShaderProgram->setUniformValue("region3ColorMap", g_regions[3].texture);
-    mShaderProgram->setUniformValue("min0", g_regions[0].min);
-    mShaderProgram->setUniformValue("min1", g_regions[1].min);
-    mShaderProgram->setUniformValue("min2", g_regions[2].min);
-    mShaderProgram->setUniformValue("min3", g_regions[3].min);
-    mShaderProgram->setUniformValue("max0", g_regions[0].max);
-    mShaderProgram->setUniformValue("max1", g_regions[1].max);
-    mShaderProgram->setUniformValue("max2", g_regions[2].max);
-    mShaderProgram->setUniformValue("max3", g_regions[3].max);
-} */
+void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
+    shader->setUniformValue("region1ColorMap", g_regions[0].texture);
+    shader->setUniformValue("region2ColorMap", g_regions[1].texture);
+    shader->setUniformValue("region3ColorMap", g_regions[2].texture);
+    shader->setUniformValue("region4ColorMap", g_regions[3].texture);
+    shader->setUniformValue("region1Min", g_regions[0].min);
+    shader->setUniformValue("region2Min", g_regions[1].min);
+    shader->setUniformValue("region3Min", g_regions[2].min);
+    shader->setUniformValue("region4Min", g_regions[3].min);
+    shader->setUniformValue("region1Max", g_regions[0].max);
+    shader->setUniformValue("region2Max", g_regions[1].max);
+    shader->setUniformValue("region3Max", g_regions[2].max);
+    shader->setUniformValue("region4Max", g_regions[3].max);
+    shader->setUniformValue("sea_level", 5.2f);
+}
 
 
 float3 * Terrain::getTerrain() {
@@ -78,26 +78,17 @@ float2 Terrain::wrap(float2 val){
     The main drawing method which will be called 30 frames per second. All of the tesselation is done for you.
     You need to worry about texturing the terrain here.
 **/
-/* void Terrain::paintGL() {
-    // Get the time in seconds
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void Terrain::render() {
+    //float time = mIncrement++ / (float)mFPS;
 
-  //  glDisable(GL_TEXTURE_2D);
-    //gluSphere(mQuadric, 10.0, 10, 10);
-    float time = mIncrement++ / (float)mFPS;
-
-    if (toScale){
-       UpdatePulseShaderParameters();
-    }
     // Clear the color and depth buffers to the current glClearColor
-    updateCamera();
     glMatrixMode(GL_MODELVIEW);
+
     // Push a new matrix onto the stack for modelling transformations
     glPushMatrix();
+
+    /*
     glColor3f(0.5f, 0.5f, 0.6f);
-    if(mAutoRotate){
-        rotateBy++;
-    }
     GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
     GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
     GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
@@ -106,7 +97,8 @@ float2 Terrain::wrap(float2 val){
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
     glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
     glLightfv(GL_LIGHT0, GL_POSITION, position);
-    glRotatef(rotateBy, 0.0f, 0.0f, 1.0f);
+    */
+
     float unitIncrement = HEIGHTMAP_TILING_FACTOR/(mSize-1);
     glBegin(GL_QUADS);
     for (int row = 0; row < mSize-1;row++){
@@ -124,7 +116,6 @@ float2 Terrain::wrap(float2 val){
             float2 blc = wrap(float2((row+1)*unitIncrement,column*unitIncrement));
             float2 brc = wrap(float2((row+1)*unitIncrement,(column+1)*unitIncrement));
             float2 trc = wrap(float2(row*unitIncrement,(column+1)*unitIncrement));
-
 
             if (isMultiple(column+1)){
                 trc = float2(trc.row,1.0);
@@ -157,12 +148,7 @@ float2 Terrain::wrap(float2 val){
     glEnd();
     // Discard the modelling transformations (leaving only camera settings)
     glPopMatrix();
-    // Swap the buffers to show what we have just drawn onto the screen
-    swapBuffers();
-    glFlush(); //Usually a good idea to call this
-} */
-
-
+}
 
 
 /**
