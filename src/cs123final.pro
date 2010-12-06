@@ -4,21 +4,21 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl
+QT += core gui opengl
 
-TARGET = lab09
+TARGET = cs123final
 TEMPLATE = app
 CONFIG += console
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
+    mainwindow.cpp \
     glwidget.cpp \
     drawengine.cpp \
     targa.cpp \
     glm.cpp \
     terrain.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS += mainwindow.h \
     glwidget.h \
     drawengine.h \
     targa.h \
@@ -26,6 +26,10 @@ HEADERS  += mainwindow.h \
     common.h \
     terrain.h
 
-FORMS    += mainwindow.ui
+FORMS += mainwindow.ui
+INCLUDEPATH += src
+DEPENDPATH += src
 
+QMAKE_CXXFLAGS_RELEASE -= -O2
+QMAKE_CXXFLAGS_RELEASE += -O3
 RESOURCES +=

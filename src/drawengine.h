@@ -24,10 +24,10 @@ struct Camera {
     float fovy, near, far;
 };
 
-static const QString TERRAIN_TEX0 = "/course/cs123/pub/lab07/textures/dirt.JPG";
-static const QString TERRAIN_TEX1 = "/course/cs123/pub/lab07/textures/grass.JPG";
-static const QString TERRAIN_TEX2 = "/course/cs123/pub/lab07/textures/rock.JPG";
-static const QString TERRAIN_TEX3 = "/course/cs123/pub/lab07/textures/snow.JPG";
+static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
+static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
+static const QString TERRAIN_TEX2 = "textures/terrain/rock.jpg";
+static const QString TERRAIN_TEX3 = "textures/terrain/snow.jpg";
 
 class DrawEngine {
 public:
