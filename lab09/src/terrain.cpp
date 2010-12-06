@@ -37,6 +37,7 @@ void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
     shader->setUniformValue("region3Max", g_regions[2].max);
     shader->setUniformValue("region4Max", g_regions[3].max);
     shader->setUniformValue("sea_level", 5.2f);
+    shader->setUniformValue("CubeMap", GL_TEXTURE0);
 }
 
 
