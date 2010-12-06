@@ -212,18 +212,6 @@ void DrawEngine::load_shaders() {
                                                        "shaders/refract.frag");
     shader_programs_["refract"]->link();
     cout << "\t \033[32mshaders/refract\033[0m" << endl;
-    shader_programs_["brightpass"] = new QGLShaderProgram(context_);
-    shader_programs_["brightpass"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "shaders/brightpass.frag");
-    shader_programs_["brightpass"]->link();
-    cout << "\t \033[32mshaders/brightpass\033[0m" << endl;
-
-    shader_programs_["blur"] = new QGLShaderProgram(context_);
-    shader_programs_["blur"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "shaders/blur.frag");
-    shader_programs_["blur"]->link();
-    cout << "\t \033[32mshaders/blur\033[0m" << endl;
-
 
     shader_programs_["terrain"] = new QGLShaderProgram(context_);
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -366,7 +354,7 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 **/
 void DrawEngine::draw_frame(float time,int w,int h) {
     fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
-    //Render the scene to a framebuffer
+    //Render the scene to framebuffer 0
     framebuffer_objects_["fbo_0"]->bind();
     perspective_camera(w,h);
     render_scene(time,w,h);
@@ -394,54 +382,9 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     glBindTexture(GL_TEXTURE_2D, 0);
     framebuffer_objects_["fbo_2"]->release();
     */
-    /*
-    //Uncomment this section in step 2 of the lab...
-    float scales[] = {4.f,8.f,16.f,32.f};
-    for(int i = 0; i < 4; ++i) {
-        render_blur(w /scales[i],h /scales[i]);
-        glBindTexture(GL_TEXTURE_2D,framebuffer_objects_["fbo_1"]->texture());
-        glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_ONE,GL_ONE);
-        glTranslatef(0.f,(scales[i] - 1)* -h,0.f);
-        textured_quad(w * scales[i],h * scales[i],false);
-        glDisable(GL_BLEND);
-        glBindTexture(GL_TEXTURE_2D,0);
-     }
-    */
 }
 
 
-
-/**
-  @paragraph Should run a gaussian blur on the texture stored in
-  fbo 2 and put the result in fbo 1.  The blur should have a radius of 2.
-
-  @todo Finish filling this in.
-
-  @param time: the current program time in milliseconds
-  @param w:    the viewport width
-  @param h:    the viewport height
-
-**/
-void DrawEngine::render_blur(float w,float h) {
-    int radius = 2,dim = radius * 2 + 1;
-    GLfloat kernel[dim * dim],offsets[dim * dim * 2];
-    create_blur_kernel(radius,w,h,&kernel[0],&offsets[0]);
-
-    framebuffer_objects_["fbo_1"]->bind(); // bind fb1
-    shader_programs_["blur"]->bind(); // bind blur
-    shader_programs_["blur"]->setUniformValueArray("offsets", offsets, dim * dim * 2, 2);
-    shader_programs_["blur"]->setUniformValueArray("kernel", kernel, dim * dim, 1);
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture()); // bind texture
-    // draw a quadrilateral
-    textured_quad(w, h, false);
-    // unbind stuff
-    shader_programs_["brightpass"]->release();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    framebuffer_objects_["fbo_1"]->release();
-}
 
 /**
   @paragraph Renders the actual scene.  May be called multiple times by
@@ -618,33 +561,7 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
     return id;
 }
-/**
-  @paragraph Creates a gaussian blur kernel with the specified radius.  The kernel values
-  and offsets are stored.
 
-  @param radius: The radius of the kernel to create.
-  @param w: The width of the image.
-  @param h: The height of the image.
-  @param kernel: The array to write the kernel values to.
-  @param offsets: The array to write the offset values to.
-**/
-void DrawEngine::create_blur_kernel(int radius,int w,int h,GLfloat* kernel,GLfloat* offsets) {
-    int size = radius * 2 + 1;
-    float sigma = radius / 3.0f,twoSigmaSigma = 2.0f * sigma * sigma,
-        rootSigma = sqrt(twoSigmaSigma * M_PI),total = 0.0f;
-    float xOff = 1.0f / w,yOff = 1.0f / h;
-    int offsetIndex = 0;
-    for(int y = -radius,idx = 0; y <= radius; ++y) {
-        for(int x = -radius; x <= radius; ++x,++idx) {
-            float d = x * x + y * y;
-            kernel[idx] = exp(-d / twoSigmaSigma) / rootSigma;
-            total += kernel[idx];
-            offsets[offsetIndex++] = x * xOff;
-            offsets[offsetIndex++] = y * yOff;
-        }
-    }
-    for(int i = 0; i < size * size; ++i) kernel[i] /= total;
-}
 
 /**
   @paragraph Called when a key has been pressed in the GLWidget.

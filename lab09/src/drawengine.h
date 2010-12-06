@@ -55,14 +55,12 @@ protected:
     void textured_quad(int w, int h, bool flip);
     void render_scene(float time, int w, int h);
     void realloc_framebuffers(int w, int h);
-    void render_blur(float width, float height);
     void load_models();
     void load_textures();
     GLuint load_texture(const QFile &file);
     void load_shaders();
     GLuint load_cube_map(QList<QFile *> files);
     void create_fbos(int w, int h);
-    void create_blur_kernel(int radius,int w,int h,GLfloat* kernel,GLfloat* offsets);
     void render_terrain();
 
     //member variables
