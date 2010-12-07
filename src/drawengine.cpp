@@ -415,7 +415,7 @@ void DrawEngine::render_scene(float time,int w,int h) {
     // set the uniform values for the terrain shader
     shader_programs_["terrain"]->bind();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
+    //glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
     glPushMatrix();
     glTranslatef(0, -15.f, 0.f);

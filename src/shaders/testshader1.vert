@@ -40,11 +40,12 @@ void main(){
 	
 	//check to see if the position is below the sea level
 	if(vertCopy.z <= sea_level){
-		//vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
-		vec4 bump = texture2D(region2ColorMap, gl_TexCoord[0].st);
+		//vec3 bump = texture2D(bumpmap, gl_TexCoord[0].st).xyz;
+		//vec3 bump = texture2D(region2ColorMap, gl_TexCoord[0].st).xyz;
 		
+		vertexNorm = gl_NormalMatrix * vec3(0.0, 0.0, 0.1);
+		//vertexNorm = gl_NormalMatrix * bump;
 		vertCopy.z = sea_level;
-		vertexNorm = gl_NormalMatrix * (normalize(vec3(0.0, 0.0, 1.0) + bump.xyz));
 		isWater = 1.0;
 		
 		V = gl_ModelViewMatrix * vertCopy;

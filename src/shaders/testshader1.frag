@@ -45,10 +45,9 @@ void main(){
 		//get the environment color for the refraction
 		vec4 env_color2 = textureCube(CubeMap, R2);
 		
-		
 		//mix the two colors
-		//gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
-		gl_FragColor = texture2D(region1ColorMap, gl_TexCoord[0].st) * intensity;
+		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+		//gl_FragColor = texture2D(bumpmap, gl_TexCoord[0].st) * intensity;
 		
 	}
 	

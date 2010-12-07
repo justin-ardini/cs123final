@@ -1,5 +1,7 @@
 #include "terrain.h"
 using std::string;
+using std::cout;
+using std::endl;
 
 Terrain::Terrain() {
     mRoughness = 5;
@@ -38,7 +40,7 @@ void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
     shader->setUniformValue("region4Max", g_regions[3].max);
     shader->setUniformValue("sea_level", 5.4f);
     shader->setUniformValue("CubeMap", GL_TEXTURE0);
-    shader->setUniformValue("bumpmap", 0);
+    shader->setUniformValue("bumpmap", bumpmap);
 }
 
 
