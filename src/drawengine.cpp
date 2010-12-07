@@ -41,13 +41,12 @@ extern "C"{
 
 **/
 DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context) {
-    //initialize ogl settings
+    // Initialize OGL settings
     glEnable(GL_TEXTURE_2D);
 
     glEnable(GL_POLYGON_SMOOTH); //Enable smoothing
 
     glShadeModel(GL_SMOOTH); //Smooth or flat shading model
-    // glShadeModel(GL_FLAT);
     glPolygonMode(GL_FRONT, GL_FILL); //Shaded mode
     glPolygonMode(GL_BACK, GL_FILL);
 
@@ -85,7 +84,6 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     glDisable(GL_LIGHTING);
     glClearColor(0.0f,0.0f,0.0f,0.0f);
 
-
     //init member variables
     previous_time_ = 0.0f;
     camera_.center.x = 0.f,camera_.center.y = 0.f,camera_.center.z = 0.f;
@@ -113,7 +111,6 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     terrain_->populateNormals();
 
     load_textures();
-
     create_fbos(w,h);
 
     cout << "\033[31;1mRenderingi...\033[0m" << endl;
@@ -322,8 +319,9 @@ void DrawEngine::create_fbos(int w,int h) {
     //These do not require depth attachments.
     framebuffer_objects_["fbo_1"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGB16F_ARB);
-    //You need to create another framebuffer here.  Look up two lines to see how to do this... =.=
     framebuffer_objects_["fbo_2"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
+                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+    framebuffer_objects_["db"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGB16F_ARB);
 }
 /**
@@ -341,6 +339,7 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
         framebuffer_objects_[key] = new QGLFramebufferObject(w,h,format);
     }
 }
+
 
 /**
   @paragraph Should render one frame at the given elapsed time in the program.
@@ -360,17 +359,21 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     perspective_camera(w,h);
     render_scene(time,w,h);
     framebuffer_objects_["fbo_0"]->release();
-    //copy the rendered scene into framebuffer 1
+    // Copy the rendered scene into framebuffer 1
     framebuffer_objects_["fbo_0"]->blitFramebuffer(framebuffer_objects_["fbo_1"],
                                                    QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
                                                    QRect(0,0,w,h),GL_COLOR_BUFFER_BIT,GL_NEAREST);
+    // Copy the depth buffer into db
+    framebuffer_objects_["fbo_0"]->blitFramebuffer(framebuffer_objects_["db"],
+                                                   QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
+                                                   QRect(0,0,w,h),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
 
-
-    // Step 0: Draw the scene
+    // Draw the scene
     orthogonal_camera(w, h);
     glBindTexture(GL_TEXTURE_2D, framebuffer_objects_[ "fbo_1"]->texture());
     textured_quad(w, h, true);
     glBindTexture(GL_TEXTURE_2D, 0);
+
     /*
     // bind everything
     framebuffer_objects_["fbo_2"]->bind(); // bind fb2
