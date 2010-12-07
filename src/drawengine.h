@@ -25,10 +25,19 @@ struct Camera {
     float fovy, near, far;
 };
 
+<<<<<<< HEAD:src/drawengine.h
 static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
 static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
 static const QString TERRAIN_TEX2 = "textures/terrain/rock.jpg";
 static const QString TERRAIN_TEX3 = "textures/terrain/snow.jpg";
+=======
+#define APERTURE 32
+
+static const QString TERRAIN_TEX0 = "../src/textures/terrain/dirt.jpg";
+static const QString TERRAIN_TEX1 = "../src/textures/terrain/grass.jpg";
+static const QString TERRAIN_TEX2 = "../src/textures/terrain/rock.jpg";
+static const QString TERRAIN_TEX3 = "../src/textures/terrain/snow.jpg";
+>>>>>>> 2b7591c3a38bb604b91566f909d42216a4a1a729:src/drawengine.h
 
 class DrawEngine {
 public:

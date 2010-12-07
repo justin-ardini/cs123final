@@ -29,8 +29,8 @@ struct TerrainRegion
     }
 };
 
-#define DEFAULT_DISTANCE 15.0f
-#define DEFAULT_RANGE 50.0f
+#define DEFAULT_DISTANCE 20.0f
+#define DEFAULT_RANGE 30.0f
 
 class Terrain
 {
