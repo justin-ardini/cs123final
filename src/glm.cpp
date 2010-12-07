@@ -21,10 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#define GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_LEGACY // no glext.h, we have our own
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <GL/glext.h>
+#define GL_GLEXT_PROTOTYPES
+#include "glext.h"
 #include "glm.h"
 #include "targa.h"
 

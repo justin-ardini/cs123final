@@ -4,9 +4,13 @@
   @author psastras
 **/
 
-#include "drawengine.h"
+#define GL_GLEXT_LEGACY // no glext.h, we have our own
+#include <GL/gl.h>
+#define GL_GLEXT_PROTOTYPES
+#include "glext.h"
+#include <GL/glu.h>
 #include "glm.h"
-#include <QtOpenGL>
+#include "drawengine.h"
 #include <QKeyEvent>
 #include <QGLContext>
 #include <QHash>
@@ -14,19 +18,13 @@
 #include <QQuaternion>
 #include <QVector3D>
 #include <QString>
-#include <GL/glu.h>
 #include <iostream>
 #include <QFile>
 #include <QGLFramebufferObject>
-#define GL_GLEXT_PROTOTYPES
-#include <GL/glext.h>
 
 using std::cout;
 using std::endl;
 
-extern "C"{
-    extern void APIENTRY glActiveTexture (GLenum);
-}
 
 /**
   @paragraph DrawEngine ctor.  Expects a Valid OpenGL context and the viewport's current
@@ -249,6 +247,14 @@ void DrawEngine::load_shaders() {
                                                             "shaders/lerp.frag");
     shader_programs_["lerp"]->link();
     cout << "\t \033shaders/lerp\033" << endl;
+
+    shader_programs_["renderblur"] = new QGLShaderProgram(context_);
+    shader_programs_["renderblur"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                            "shaders/downsample.vert");
+    shader_programs_["renderblur"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                            "shaders/renderblur.frag");
+    shader_programs_["renderblur"]->link();
+    cout << "\t \033shaders/renderblur\033" << endl;
 }
 
 /**
@@ -348,20 +354,20 @@ void DrawEngine::create_fbos(int w,int h) {
     //Allocate the main framebuffer object for rendering the scene to
     //This needs a depth attachment.
     framebuffer_objects_["fbo_0"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
-                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_0"]->format().setSamples(16);
     //Allocate the secondary framebuffer obejcts for rendering textures to (post process effects)
     //These do not require depth attachments.
     framebuffer_objects_["fbo_1"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
-                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_2"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
-                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
-                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_4"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
-                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["db"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
-                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
 }
 
 /**
@@ -419,106 +425,85 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     //                                               QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
     //                                               QRect(0,0,w,h),GL_COLOR_BUFFER_BIT,GL_NEAREST);
 
-    //glMatrixMode(GL_PROJECTION);
-    //glLoadIdentity();
-    //glMatrixMode(GL_MODELVIEW);
-    //glLoadIdentity();
     orthogonal_camera(w, h);
 
-    // Second Pass: Downsampling
-    framebuffer_objects_["fbo_1"]->bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    shader_programs_["downsample"]->bind();
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
-    glViewport(0, 0, w / 2, h / 2);
-    textured_quad(w, h, true);
-    shader_programs_["downsample"]->release();
-    framebuffer_objects_["fbo_1"]->release();
+    if (true) {
+        // Second Pass: Downsampling
+        //framebuffer_objects_["fbo_1"]->bind();
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //shader_programs_["downsample"]->bind();
+        //glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+        //glViewport(0, 0, w / 2, h / 2);
+        //textured_quad(w, h, true);
+        //shader_programs_["downsample"]->release();
+        //framebuffer_objects_["fbo_1"]->release();
 
-    // Third pass: Gaussian filtering along the X axis
-    framebuffer_objects_["fbo_2"]->bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    shader_programs_["blur_x"]->bind();
-    shader_programs_["blur_x"]->setUniformValue("Width", w * 2);
-    glViewport(0, 0, w, h);
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_1"]->texture());
-    textured_quad(w, h, true);
-    shader_programs_["blur_x"]->release();
-    framebuffer_objects_["fbo_2"]->release();
+        glViewport(0, 0, w, h);
+        // Third pass: Gaussian filtering along the X axis
+        framebuffer_objects_["fbo_2"]->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader_programs_["blur_x"]->bind();
+        shader_programs_["blur_x"]->setUniformValue("Width", w * 2);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+        textured_quad(w, h, true);
+        shader_programs_["blur_x"]->release();
+        framebuffer_objects_["fbo_2"]->release();
 
-    // Fourth pass: Gaussian filtering along the Y axis
-    framebuffer_objects_["fbo_3"]->bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    shader_programs_["blur_y"]->bind();
-    shader_programs_["blur_y"]->setUniformValue("Height", h * 2);
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
-    textured_quad(w, h, true);
-    shader_programs_["blur_y"]->release();
-    framebuffer_objects_["fbo_3"]->release();
+        // Fourth pass: Gaussian filtering along the Y axis
+        framebuffer_objects_["fbo_3"]->bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader_programs_["blur_y"]->bind();
+        shader_programs_["blur_y"]->setUniformValue("Height", h * 2);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
+        textured_quad(w, h, true);
+        shader_programs_["blur_y"]->release();
+        framebuffer_objects_["fbo_3"]->release();
 
-    // Fifth pass: final compositing
-    framebuffer_objects_["fbo_4"]->bind();
-    shader_programs_["lerp"]->bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_3"]->texture());
-    shader_programs_["lerp"]->setUniformValue("Tex0", framebuffer_objects_["fbo_0"]->texture());
-    shader_programs_["lerp"]->setUniformValue("Tex1", framebuffer_objects_["fbo_3"]->texture());
+        // Fifth pass: final compositing
+        //framebuffer_objects_["fbo_4"]->bind();
+        glDrawBuffer(GL_BACK);
+        shader_programs_["lerp"]->bind();
+        shader_programs_["lerp"]->setUniformValue("Tex0", 0);
+        shader_programs_["lerp"]->setUniformValue("Tex1", 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_3"]->texture());
 
-    //textured_quad(w, h, true);
-    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
-    glBegin(GL_QUADS);
-    glMultiTexCoord2f(0.0f, 1.0f);
-    glMultiTexCoord2f(0.0f, 1.0f);
-    glVertex2f(0.0f,0.0f);
-    glMultiTexCoord2f(1.0f, 1.0f);
-    glMultiTexCoord2f(1.0f, 1.0f);
-    glVertex2f(w,0.0f);
-    glMultiTexCoord2f(1.0f, 0.0f);
-    glMultiTexCoord2f(1.0f, 0.0f);
-    glVertex2f(w,h);
-    glMultiTexCoord2f(0.0f, 0.0f);
-    glMultiTexCoord2f(0.0f, 0.0f);
-    glVertex2f(0.0f,h);
-    glEnd();
-    /* glBegin(GL_QUADS);
-            glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 0.0f);
-            glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 0.0f);
-            glVertex2d(-1, -1);
-            glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 0.0f);
-            glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 0.0f);
-            glVertex2d(1, -1);
-            glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 1.0f);
-            glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 1.0f);
-            glVertex2d(1, 1);
-            glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 1.0f);
-            glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 1.0f);
-            glVertex2d(-1, 1);
-    glEnd(); */
+        //glViewport(0, 0, w, h);
 
-    shader_programs_["lerp"]->release();
-    framebuffer_objects_["fbo_4"]->release();
+        // Multitextured quad
+        glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+        glBegin(GL_QUADS);
+        glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 1.0f);
+        glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 1.0f);
+        glVertex2f(0.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 1.0f);
+        glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 1.0f);
+        glVertex2f(w, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 0.0f);
+        glVertex2f(w, h);
+        glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 0.0f);
+        glVertex2f(0.0f, h);
+        glEnd();
 
-    // Draw the scene
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
-    textured_quad(w, h, true);
-    glBindTexture(GL_TEXTURE_2D, 0);
+        shader_programs_["lerp"]->release();
+        //framebuffer_objects_["fbo_4"]->release();
 
-    /*
-    // bind everything
-    framebuffer_objects_["fbo_2"]->bind(); // bind fb2
-    shader_programs_["brightpass"]->bind(); // bind brightpass
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_1"]->texture()); // bind texture
-    // draw a quadrilateral
-    textured_quad(w, h, true);
-    // unbind everything
-    shader_programs_["brightpass"]->release();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    framebuffer_objects_["fbo_2"]->release();
-    */
+        //glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_4"]->texture());
+        //textured_quad(w, h, true);
+        //glBindTexture(GL_TEXTURE_2D, 0);
+    }
+    /*else {
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+        textured_quad(w, h, true);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    } */
+
 }
 
 

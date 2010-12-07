@@ -48,8 +48,9 @@ void main(){
 		
 		
 		//mix the two colors
-		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
-        gl_FragColor.w = blur;
+		gl_FragColor = vec4(blur,blur,blur,blur);
+        //gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+        //gl_FragColor.a = blur;
 		
 	}
 	
@@ -74,7 +75,8 @@ void main(){
 		
 		vec4 totalColor = (color_1 * region1Weight) + (color_2 * region2Weight) + (color_3 * region3Weight) + (color_4 * region4Weight);
 		
-		gl_FragColor = totalColor * intensity;
-        gl_FragColor.w = blur;
+		gl_FragColor = vec4(blur,blur,blur,blur);
+        //gl_Frag_Color = totalColor * intensity;
+        //gl_FragColor.a = blur;
 	}
 }

@@ -10,7 +10,7 @@ TARGET = cs123final
 TEMPLATE = app
 CONFIG += console
 
-SOURCES += main.cpp\
+SOURCES += main.cpp \
     mainwindow.cpp \
     glwidget.cpp \
     drawengine.cpp \
@@ -24,7 +24,8 @@ HEADERS += mainwindow.h \
     targa.h \
     glm.h \
     common.h \
-    terrain.h
+    terrain.h \
+    glext.h
 
 FORMS += mainwindow.ui
 INCLUDEPATH += src

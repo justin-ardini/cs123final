@@ -3,6 +3,7 @@
 
 #include <QHash>
 #include <QString>
+#define GL_GLEXT_LEGACY // no glext.h, we have our own
 #include <qgl.h>
 #include "glm.h"
 #include "common.h"

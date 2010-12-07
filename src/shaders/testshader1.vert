@@ -62,8 +62,7 @@ void main(){
 	
 	gl_Position = gl_ModelViewProjectionMatrix * vertCopy;
 	
-	vec4 posWV = gl_ModelViewMatrix * vertCopy;
-    blur = clamp(abs(-posWV.z - focalDistance) / focalRange, 0.0, 1.0);
+    blur = clamp(abs(-gl_Position.z - focalDistance) / focalRange, 0.0, 1.0);
 	
 	vec3 normalizedNorm = normalize(vertexNorm);
 	

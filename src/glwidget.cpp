@@ -3,6 +3,7 @@
 #include "glwidget.h"
 #include "drawengine.h"
 
+#define GL_GLEXT_LEGACY // no glext.h, we have our own
 #include <qgl.h>
 #include <QMouseEvent>
 #include <QWheelEvent>
