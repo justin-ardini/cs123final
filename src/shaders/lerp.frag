@@ -6,5 +6,5 @@ void main (void)
 	vec4 Blurred = texture2D(Tex1, gl_TexCoord[1].st);
 
 	// HLSL linear interpolation function
-	gl_FragColor = Fullres + (1 - Fullres.a) * (Blurred - Fullres);
+	gl_FragColor = Fullres + Fullres.a * (Blurred - Fullres);
 }

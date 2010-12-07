@@ -89,6 +89,8 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     camera_.up.x = 0.f,camera_.up.y = 1.f,camera_.up.z = 0.f;
     camera_.near = 0.1f,camera_.far = 100.f;
     camera_.fovy = 60.f;
+    camera_.focalDistance = DEFAULT_DISTANCE;
+    camera_.focalRange = DEFAULT_RANGE;
 
     //init resources - so i heard you like colored text?
     cout << "Using OpenGL Version " << glGetString(GL_VERSION) << endl << endl;
@@ -303,8 +305,9 @@ void DrawEngine::load_textures() {
     terrainTextures[1] = load_texture(TERRAIN_TEX1);
     terrainTextures[2] = load_texture(TERRAIN_TEX2);
     terrainTextures[3] = load_texture(TERRAIN_TEX3);
-    terrain_->setTextures(terrainTextures);
     textures_["cube_map_1"] = load_cube_map(fileList);
+
+    terrain_->setTextures(terrainTextures);
 
     GLuint tempInt = load_texture(QString("../water01_bumpmap.jpg"));
     terrain_->bumpmap = tempInt;
@@ -365,8 +368,6 @@ void DrawEngine::create_fbos(int w,int h) {
     framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_4"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
-                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    framebuffer_objects_["db"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
 }
 
@@ -528,9 +529,11 @@ void DrawEngine::render_scene(float time,int w,int h) {
 
     // set the uniform values for the terrain shader
     shader_programs_["terrain"]->bind();
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
+    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
+    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
     glPushMatrix();
     glTranslatef(0, -15.f, 0.f);
     glRotatef(270, 1, 0, 0);
@@ -538,22 +541,18 @@ void DrawEngine::render_scene(float time,int w,int h) {
     terrain_->render();
     glPopMatrix();
     shader_programs_["terrain"]->release();
-/*
+
+    /*
     glActiveTexture(GL_TEXTURE0);
 
-    /* shader_programs_["refract"]->bind();
-    shader_programs_["refract"]->setUniformValue("CubeMap",GL_TEXTURE0);
+    shader_programs_["refract"]->bind();
+    shader_programs_["refract"]->setUniformValue("CubeMap", GL_TEXTURE0);
     shader_programs_["refract"]->release();
 
     shader_programs_["reflect"]->bind();
     shader_programs_["reflect"]->setUniformValue("CubeMap",GL_TEXTURE0);
-<<<<<<< HEAD:src/drawengine.cpp
     shader_programs_["reflect"]->release(); */
 
-=======
-    shader_programs_["reflect"]->release();
-*/
->>>>>>> 2b7591c3a38bb604b91566f909d42216a4a1a729:src/drawengine.cpp
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);
@@ -699,6 +698,17 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
   **/
 void DrawEngine::key_press_event(QKeyEvent *event) {
     switch(event->key()) {
-
+    case Qt::Key_Up:
+        camera_.focalDistance += 1.0f;
+        break;
+    case Qt::Key_Down:
+        camera_.focalDistance -= 1.0f;
+        break;
+    case Qt::Key_Left:
+        camera_.focalRange -= 1.0f;
+        break;
+    case Qt::Key_Right:
+        camera_.focalRange += 1.0f;
+        break;
     }
 }

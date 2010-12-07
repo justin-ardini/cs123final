@@ -19,13 +19,9 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
-<<<<<<< HEAD:src/shaders/testshader1.vert
 varying float blur;
 uniform float focalDistance, focalRange;
-varying int isWater;
-=======
 varying float isWater;
->>>>>>> 2b7591c3a38bb604b91566f909d42216a4a1a729:src/shaders/testshader1.vert
 
 varying vec4 V; //vertex
 varying vec4 E; //eye
@@ -82,8 +78,5 @@ void main(){
 	
 	//get the height
 	height = gl_Vertex.z;
-<<<<<<< HEAD:src/shaders/testshader1.vert
-	
-=======
->>>>>>> 2b7591c3a38bb604b91566f909d42216a4a1a729:src/shaders/testshader1.vert
+
 }
