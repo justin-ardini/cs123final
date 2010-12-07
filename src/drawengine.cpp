@@ -200,24 +200,24 @@ void DrawEngine::load_shaders() {
     cout << "\033[1mLoading shaders...\033[0m" << endl;
     shader_programs_["reflect"] = new QGLShaderProgram(context_);
     shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                       "shaders/reflect.vert");
+                                                       "../src/shaders/reflect.vert");
     shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "shaders/reflect.frag");
+                                                       "../src/shaders/reflect.frag");
     shader_programs_["reflect"]->link();
     cout << "\t \033[32mshaders/reflect\033[0m" << endl;
     shader_programs_["refract"] = new QGLShaderProgram(context_);
     shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                       "shaders/refract.vert");
+                                                       "../src/shaders/refract.vert");
     shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "shaders/refract.frag");
+                                                       "../src/shaders/refract.frag");
     shader_programs_["refract"]->link();
     cout << "\t \033[32mshaders/refract\033[0m" << endl;
 
     shader_programs_["terrain"] = new QGLShaderProgram(context_);
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                         "shaders/testshader1.vert");
+                                                         "../src/shaders/testshader1.vert");
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                         "shaders/testshader1.frag");
+                                                         "../src/shaders/testshader1.frag");
     shader_programs_["terrain"]->link();
     cout << "\t \033[32mshaders/terrain\033[0m" << endl;
 
@@ -232,36 +232,37 @@ void DrawEngine::load_textures() {
     QList<QFile *> fileList;
 
     // Alpine
-    /*
-    fileList.append(new QFile("textures/alpine/alpine_west.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_east.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_up.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_down.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_north.bmp"));*/
+
+    fileList.append(new QFile("../src/textures/alpine/alpine_west.bmp"));
+    fileList.append(new QFile("../src/textures/alpine/alpine_east.bmp"));
+    fileList.append(new QFile("../src/textures/alpine/alpine_up.bmp"));
+    fileList.append(new QFile("../src/textures/alpine/alpine_down.bmp"));
+    fileList.append(new QFile("../src/textures/alpine/alpine_south.bmp"));
+    fileList.append(new QFile("../src/textures/alpine/alpine_north.bmp"));
     /*
     // Lagoon
-    fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_east.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_up.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_down.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_south.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_north.bmp")); */
+    fileList.append(new QFile("../src/textures/lagoon/lagoon_west.bmp"));
+    fileList.append(new QFile("../src/textures/lagoon/lagoon_east.bmp"));
+    fileList.append(new QFile("../src/textures/lagoon/lagoon_up.bmp"));
+    fileList.append(new QFile("../src/textures/lagoon/lagoon_down.bmp"));
+    fileList.append(new QFile("../src/textures/lagoon/lagoon_south.bmp"));
+    fileList.append(new QFile("../src/textures/lagoon/lagoon_north.bmp")); */
     /*
     // Hourglass
-    fileList.append(new QFile("textures/hourglass/hourglass_west.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_east.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_up.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_down.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_south.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_north.bmp")); */
+    fileList.append(new QFile("../src/textures/hourglass/hourglass_west.bmp"));
+    fileList.append(new QFile("../src/textures/hourglass/hourglass_east.bmp"));
+    fileList.append(new QFile("../src/textures/hourglass/hourglass_up.bmp"));
+    fileList.append(new QFile("../src/textures/hourglass/hourglass_down.bmp"));
+    fileList.append(new QFile("../src/textures/hourglass/hourglass_south.bmp"));
+    fileList.append(new QFile("../src/textures/hourglass/hourglass_north.bmp")); */
     // Island
-    fileList.append(new QFile("textures/islands/islands_west.bmp"));
-    fileList.append(new QFile("textures/islands/islands_east.bmp"));
-    fileList.append(new QFile("textures/islands/islands_up.bmp"));
-    fileList.append(new QFile("textures/islands/islands_down.bmp"));
-    fileList.append(new QFile("textures/islands/islands_south.bmp"));
-    fileList.append(new QFile("textures/islands/islands_north.bmp"));
+    /*
+    fileList.append(new QFile("../src/textures/islands/islands_west.bmp"));
+    fileList.append(new QFile("../src/textures/islands/islands_east.bmp"));
+    fileList.append(new QFile("../src/textures/islands/islands_up.bmp"));
+    fileList.append(new QFile("../src/textures/islands/islands_down.bmp"));
+    fileList.append(new QFile("../src/textures/islands/islands_south.bmp"));
+    fileList.append(new QFile("../src/textures/islands/islands_north.bmp"));*/
 
     GLuint terrainTextures[4];
     terrainTextures[0] = load_texture(TERRAIN_TEX0);
@@ -270,6 +271,9 @@ void DrawEngine::load_textures() {
     terrainTextures[3] = load_texture(TERRAIN_TEX3);
     terrain_->setTextures(terrainTextures);
     textures_["cube_map_1"] = load_cube_map(fileList);
+
+    GLuint tempInt = load_texture(QString("../normalmap.bmp"));
+    terrain_->bumpmap = tempInt;
 }
 
 /**

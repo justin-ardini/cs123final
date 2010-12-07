@@ -60,7 +60,7 @@ public:
     float2 wrap(float2 val);
     bool isMultiple(int val);
 
-
+    GLuint bumpmap;
 private:
     //terrain stuff
     float3 * terrain;
