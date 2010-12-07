@@ -40,7 +40,7 @@ void main(){
 		vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
 		
 		vertCopy.z = sea_level;
-		vertexNorm = gl_NormalMatrix * vec3(0.0, 0.0, 1.0);
+		vertexNorm = gl_NormalMatrix * (vec3(0.0, 0.0, 1.0) + bump.xyz);
 		isWater = 1;
 		
 		V = gl_ModelViewMatrix * vertCopy;

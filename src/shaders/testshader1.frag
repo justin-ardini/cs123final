@@ -36,11 +36,19 @@ void main(){
 		//get the reflected vector around the surface normal
 		vec3 R = reflect(I, Nn);
 		
-		//get the environment color
+		//get the refracted vector
+		vec3 R2 = refract(I, Nn, 0.9);
+		
+		//get the environment color for the reflection
 		vec4 env_color = textureCube(CubeMap, R);
 		
+		//get the environment color for the refraction
+		vec4 env_color2 = textureCube(CubeMap, R2);
+		
+		
 		//mix the two colors
-		gl_FragColor = mix(env_color, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+		
 	}
 	
 	//if not
