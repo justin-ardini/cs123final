@@ -19,6 +19,8 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
+varying float blur;
+uniform float focalDistance, focalRange;
 varying int isWater;
 
 varying vec4 V; //vertex
@@ -35,6 +37,9 @@ void main(){
 	//get the norm of the vertex
 	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
 	
+	//get the tex coord
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+
 	//check to see if the position is below the sea level
 	if(vertCopy.z <= sea_level){
 		vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
@@ -57,6 +62,8 @@ void main(){
 	
 	gl_Position = gl_ModelViewProjectionMatrix * vertCopy;
 	
+	vec4 posWV = gl_ModelViewMatrix * vertCopy;
+    blur = clamp(abs(-posWV.z - focalDistance) / focalRange, 0.0, 1.0);
 	
 	vec3 normalizedNorm = normalize(vertexNorm);
 	
@@ -69,6 +76,4 @@ void main(){
 	//get the height
 	height = gl_Vertex.z;
 	
-	//get the tex coord
-	gl_TexCoord[0] = gl_MultiTexCoord0;
 }

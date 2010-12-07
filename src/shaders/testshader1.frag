@@ -18,6 +18,7 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
+varying float blur;
 varying int isWater;
 
 varying vec4 V; //vertex
@@ -48,6 +49,7 @@ void main(){
 		
 		//mix the two colors
 		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+        gl_FragColor.w = blur;
 		
 	}
 	
@@ -73,5 +75,6 @@ void main(){
 		vec4 totalColor = (color_1 * region1Weight) + (color_2 * region2Weight) + (color_3 * region3Weight) + (color_4 * region4Weight);
 		
 		gl_FragColor = totalColor * intensity;
+        gl_FragColor.w = blur;
 	}
 }

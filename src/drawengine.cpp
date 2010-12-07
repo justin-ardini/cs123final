@@ -6,7 +6,7 @@
 
 #include "drawengine.h"
 #include "glm.h"
-#include <qgl.h>
+#include <QtOpenGL>
 #include <QKeyEvent>
 #include <QGLContext>
 #include <QHash>
@@ -97,7 +97,7 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     //ideally we would now check to make sure all the OGL functions we use are supported
     //by the video card.  but that's a pain to do so we're not going to.
 
-    cout << "\033[31;1mLoading Resources\033[0m" << endl;
+    cout << "\033Loading Resources\033" << endl;
     load_models();
     load_shaders();
 
@@ -113,7 +113,7 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     load_textures();
     create_fbos(w,h);
 
-    cout << "\033[31;1mRenderingi...\033[0m" << endl;
+    cout << "\033Rendering...\033" << endl;
 }
 
 /**
@@ -136,7 +136,7 @@ DrawEngine::~DrawEngine() {
   initialization.
 **/
 void DrawEngine::load_models() {
-    cout << "\033[1mLoading models...\033[0m" << endl;
+    cout << "\033Loading models...\033" << endl;
     /* models_["dragon"].model = glmReadOBJ("/home/jardini/course/cs123_labs/lab09/src/models/xyzrgb_dragon.obj");
     glmUnitize(models_["dragon"].model);
     models_["dragon"].idx = glmList(models_["dragon"].model,GLM_SMOOTH);
@@ -154,7 +154,7 @@ void DrawEngine::load_models() {
         glEnd();
     }
     glEndList();
-    cout << "\t \033[32mgrid compiled\033[0m" << endl;
+    cout << "\t \033grid compiled\033" << endl;
     */
     models_["skybox"].idx = glGenLists(1);
     glNewList(models_["skybox"].idx,GL_COMPILE);
@@ -187,37 +187,68 @@ void DrawEngine::load_models() {
     glTexCoord3f(1.0f,-1.0f,-1.0f);glVertex3f(fExtent,-fExtent,-fExtent);
     glEnd();
     glEndList();
-    cout << "\t \033[32mskybox compiled\033[0m" << endl;
+    cout << "\t \033skybox compiled\033" << endl;
 }
 /**
   @paragraph Loads shaders used by the program.  Caleed by the ctor once upon
   initialization.
 **/
 void DrawEngine::load_shaders() {
-    cout << "\033[1mLoading shaders...\033[0m" << endl;
+    cout << "\033Loading shaders...\033" << endl;
     shader_programs_["reflect"] = new QGLShaderProgram(context_);
     shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                       "../src/shaders/reflect.vert");
+                                                       "shaders/reflect.vert");
     shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "../src/shaders/reflect.frag");
+                                                       "shaders/reflect.frag");
     shader_programs_["reflect"]->link();
-    cout << "\t \033[32mshaders/reflect\033[0m" << endl;
+    cout << "\t \033shaders/reflect\033" << endl;
     shader_programs_["refract"] = new QGLShaderProgram(context_);
     shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                       "../src/shaders/refract.vert");
+                                                       "shaders/refract.vert");
     shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "../src/shaders/refract.frag");
+                                                       "shaders/refract.frag");
     shader_programs_["refract"]->link();
-    cout << "\t \033[32mshaders/refract\033[0m" << endl;
+    cout << "\t \033shaders/refract\033" << endl;
 
     shader_programs_["terrain"] = new QGLShaderProgram(context_);
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                         "../src/shaders/testshader1.vert");
+                                                         "shaders/testshader1.vert");
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                         "../src/shaders/testshader1.frag");
+                                                         "shaders/testshader1.frag");
     shader_programs_["terrain"]->link();
-    cout << "\t \033[32mshaders/terrain\033[0m" << endl;
+    cout << "\t \033shaders/terrain\033" << endl;
 
+    shader_programs_["downsample"] = new QGLShaderProgram(context_);
+    shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                            "shaders/downsample.vert");
+    shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                            "shaders/downsample.frag");
+    shader_programs_["downsample"]->link();
+    cout << "\t \033shaders/downsample\033" << endl;
+
+    shader_programs_["blur_x"] = new QGLShaderProgram(context_);
+    shader_programs_["blur_x"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                            "shaders/blurx.vert");
+    shader_programs_["blur_x"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                            "shaders/blurx.frag");
+    shader_programs_["blur_x"]->link();
+    cout << "\t \033shaders/blurx\033" << endl;
+
+    shader_programs_["blur_y"] = new QGLShaderProgram(context_);
+    shader_programs_["blur_y"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                            "shaders/blury.vert");
+    shader_programs_["blur_y"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                            "shaders/blury.frag");
+    shader_programs_["blur_y"]->link();
+    cout << "\t \033shaders/blury\033" << endl;
+
+    shader_programs_["lerp"] = new QGLShaderProgram(context_);
+    shader_programs_["lerp"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                            "shaders/lerp.vert");
+    shader_programs_["lerp"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                            "shaders/lerp.frag");
+    shader_programs_["lerp"]->link();
+    cout << "\t \033shaders/lerp\033" << endl;
 }
 
 /**
@@ -225,7 +256,7 @@ void DrawEngine::load_shaders() {
   initialization.
 **/
 void DrawEngine::load_textures() {
-    cout << "\033[1mLoading textures...\033[0m" << endl;
+    cout << "\033Loading textures...\033" << endl;
     QList<QFile *> fileList;
 
     // Alpine
@@ -325,9 +356,14 @@ void DrawEngine::create_fbos(int w,int h) {
                                                              GL_TEXTURE_2D,GL_RGB16F_ARB);
     framebuffer_objects_["fbo_2"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGB16F_ARB);
+    framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
+                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
+    framebuffer_objects_["fbo_4"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
+                                                             GL_TEXTURE_2D,GL_RGB16F_ARB);
     framebuffer_objects_["db"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGB16F_ARB);
 }
+
 /**
   @paragraph Reallocates all the framebuffers.  Called when the viewport is
   resized.
@@ -345,6 +381,20 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 }
 
 
+void draw_quad() {
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2d(-1, -1);
+    glTexCoord2f(1.0f, 0.0f);
+    glVertex2d(1, -1);
+    glTexCoord2f( 1.0f, 1.0f);
+    glVertex2d(1, 1);
+    glTexCoord2f(0.0f, 1.0f);
+    glVertex2d(-1, 1);
+    glEnd();
+}
+
+
 /**
   @paragraph Should render one frame at the given elapsed time in the program.
   Assumes that the GL context is valid when this method is called.
@@ -354,27 +404,106 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
   @param time: the current program time in milliseconds
   @param w:    the viewport width
   @param h:    the viewport height
-
 **/
 void DrawEngine::draw_frame(float time,int w,int h) {
     fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
-    //Render the scene to framebuffer 0
+    //Render the scene to framebuffer 0, tracking how much we need to blur later
     framebuffer_objects_["fbo_0"]->bind();
-    perspective_camera(w,h);
-    render_scene(time,w,h);
+
+    perspective_camera(w, h);
+    render_scene(time, w, h);
     framebuffer_objects_["fbo_0"]->release();
+
     // Copy the rendered scene into framebuffer 1
-    framebuffer_objects_["fbo_0"]->blitFramebuffer(framebuffer_objects_["fbo_1"],
-                                                   QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
-                                                   QRect(0,0,w,h),GL_COLOR_BUFFER_BIT,GL_NEAREST);
-    // Copy the depth buffer into db
-    framebuffer_objects_["fbo_0"]->blitFramebuffer(framebuffer_objects_["db"],
-                                                   QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
-                                                   QRect(0,0,w,h),GL_DEPTH_BUFFER_BIT,GL_NEAREST);
+    //framebuffer_objects_["fbo_0"]->blitFramebuffer(framebuffer_objects_["fbo_1"],
+    //                                               QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
+    //                                               QRect(0,0,w,h),GL_COLOR_BUFFER_BIT,GL_NEAREST);
+
+    //glMatrixMode(GL_PROJECTION);
+    //glLoadIdentity();
+    //glMatrixMode(GL_MODELVIEW);
+    //glLoadIdentity();
+    orthogonal_camera(w, h);
+
+    // Second Pass: Downsampling
+    framebuffer_objects_["fbo_1"]->bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    shader_programs_["downsample"]->bind();
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+    glViewport(0, 0, w / 2, h / 2);
+    textured_quad(w, h, true);
+    shader_programs_["downsample"]->release();
+    framebuffer_objects_["fbo_1"]->release();
+
+    // Third pass: Gaussian filtering along the X axis
+    framebuffer_objects_["fbo_2"]->bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    shader_programs_["blur_x"]->bind();
+    shader_programs_["blur_x"]->setUniformValue("Width", w * 2);
+    glViewport(0, 0, w, h);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_1"]->texture());
+    textured_quad(w, h, true);
+    shader_programs_["blur_x"]->release();
+    framebuffer_objects_["fbo_2"]->release();
+
+    // Fourth pass: Gaussian filtering along the Y axis
+    framebuffer_objects_["fbo_3"]->bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    shader_programs_["blur_y"]->bind();
+    shader_programs_["blur_y"]->setUniformValue("Height", h * 2);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
+    textured_quad(w, h, true);
+    shader_programs_["blur_y"]->release();
+    framebuffer_objects_["fbo_3"]->release();
+
+    // Fifth pass: final compositing
+    framebuffer_objects_["fbo_4"]->bind();
+    shader_programs_["lerp"]->bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_3"]->texture());
+    shader_programs_["lerp"]->setUniformValue("Tex0", framebuffer_objects_["fbo_0"]->texture());
+    shader_programs_["lerp"]->setUniformValue("Tex1", framebuffer_objects_["fbo_3"]->texture());
+
+    //textured_quad(w, h, true);
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+    glBegin(GL_QUADS);
+    glMultiTexCoord2f(0.0f, 1.0f);
+    glMultiTexCoord2f(0.0f, 1.0f);
+    glVertex2f(0.0f,0.0f);
+    glMultiTexCoord2f(1.0f, 1.0f);
+    glMultiTexCoord2f(1.0f, 1.0f);
+    glVertex2f(w,0.0f);
+    glMultiTexCoord2f(1.0f, 0.0f);
+    glMultiTexCoord2f(1.0f, 0.0f);
+    glVertex2f(w,h);
+    glMultiTexCoord2f(0.0f, 0.0f);
+    glMultiTexCoord2f(0.0f, 0.0f);
+    glVertex2f(0.0f,h);
+    glEnd();
+    /* glBegin(GL_QUADS);
+            glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 0.0f);
+            glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 0.0f);
+            glVertex2d(-1, -1);
+            glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 0.0f);
+            glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 0.0f);
+            glVertex2d(1, -1);
+            glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 1.0f);
+            glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 1.0f);
+            glVertex2d(1, 1);
+            glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 1.0f);
+            glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 1.0f);
+            glVertex2d(-1, 1);
+    glEnd(); */
+
+    shader_programs_["lerp"]->release();
+    framebuffer_objects_["fbo_4"]->release();
 
     // Draw the scene
-    orthogonal_camera(w, h);
-    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_[ "fbo_1"]->texture());
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
     textured_quad(w, h, true);
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -425,13 +554,13 @@ void DrawEngine::render_scene(float time,int w,int h) {
 
     glActiveTexture(GL_TEXTURE0);
 
-    shader_programs_["refract"]->bind();
+    /* shader_programs_["refract"]->bind();
     shader_programs_["refract"]->setUniformValue("CubeMap",GL_TEXTURE0);
     shader_programs_["refract"]->release();
 
     shader_programs_["reflect"]->bind();
     shader_programs_["reflect"]->setUniformValue("CubeMap",GL_TEXTURE0);
-    shader_programs_["reflect"]->release();
+    shader_programs_["reflect"]->release(); */
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -562,7 +691,7 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
         texture = texture.scaledToWidth(1024,Qt::SmoothTransformation);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,3,3,texture.width(),texture.height(),0,GL_RGBA,GL_UNSIGNED_BYTE,texture.bits());
         gluBuild2DMipmaps(GL_TEXTURE_CUBE_MAP_POSITIVE_X +i, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
-        cout << "\t \033[32m" << files[i]->fileName().toStdString() << "\033[0m" << endl;
+        cout << "\t \033" << files[i]->fileName().toStdString() << "\033" << endl;
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_NEAREST_MIPMAP_NEAREST);

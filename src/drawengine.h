@@ -24,8 +24,6 @@ struct Camera {
     float fovy, near, far;
 };
 
-#define APERTURE 32
-
 static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
 static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
 static const QString TERRAIN_TEX2 = "textures/terrain/rock.jpg";

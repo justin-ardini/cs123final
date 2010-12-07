@@ -1,11 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'mainwindow.h'
 **
-<<<<<<< HEAD:lab09/src/moc_mainwindow.cpp
-** Created: Sat Dec 4 15:46:04 2010
-=======
-** Created: Mon Dec 6 10:40:10 2010
->>>>>>> upstream/master:lab09/src/moc_mainwindow.cpp
+** Created: Tue Dec 7 00:43:44 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!

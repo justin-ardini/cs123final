@@ -29,6 +29,9 @@ struct TerrainRegion
     }
 };
 
+#define DEFAULT_DISTANCE 9.0f
+#define DEFAULT_RANGE 6.0f
+
 class Terrain
 {
 public:

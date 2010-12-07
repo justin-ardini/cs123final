@@ -1,11 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'glwidget.h'
 **
-<<<<<<< HEAD:lab09/src/moc_glwidget.cpp
-** Created: Sat Dec 4 15:46:05 2010
-=======
-** Created: Mon Dec 6 10:40:11 2010
->>>>>>> upstream/master:lab09/src/moc_glwidget.cpp
+** Created: Tue Dec 7 00:43:45 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.0)
 **
 ** WARNING! All changes made in this file will be lost!
