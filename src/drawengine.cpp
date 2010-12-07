@@ -269,7 +269,7 @@ void DrawEngine::load_textures() {
     terrain_->setTextures(terrainTextures);
     textures_["cube_map_1"] = load_cube_map(fileList);
 
-    GLuint tempInt = load_texture(QString("../normalmap.bmp"));
+    GLuint tempInt = load_texture(QString("../water01_bumpmap.jpg"));
     terrain_->bumpmap = tempInt;
 }
 
@@ -414,6 +414,8 @@ void DrawEngine::render_scene(float time,int w,int h) {
 
     // set the uniform values for the terrain shader
     shader_programs_["terrain"]->bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
     glPushMatrix();
     glTranslatef(0, -15.f, 0.f);
@@ -422,7 +424,7 @@ void DrawEngine::render_scene(float time,int w,int h) {
     terrain_->render();
     glPopMatrix();
     shader_programs_["terrain"]->release();
-
+/*
     glActiveTexture(GL_TEXTURE0);
 
     shader_programs_["refract"]->bind();
@@ -432,7 +434,7 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["reflect"]->bind();
     shader_programs_["reflect"]->setUniformValue("CubeMap",GL_TEXTURE0);
     shader_programs_["reflect"]->release();
-
+*/
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP,0);

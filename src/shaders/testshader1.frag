@@ -18,7 +18,7 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
-varying int isWater;
+varying float isWater;
 
 varying vec4 V; //vertex
 varying vec4 E; //eye
@@ -26,7 +26,7 @@ varying vec3 N; //surface normal
 
 void main(){
 	//if it is water
-	if(isWater == 1){
+	if(isWater == 1.0){
 		//normalize the normal
 		vec3 Nn = normalize(N);
 		
@@ -47,7 +47,8 @@ void main(){
 		
 		
 		//mix the two colors
-		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+		//gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+		gl_FragColor = texture2D(region1ColorMap, gl_TexCoord[0].st) * intensity;
 		
 	}
 	

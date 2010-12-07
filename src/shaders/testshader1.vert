@@ -19,7 +19,7 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
-varying int isWater;
+varying float isWater;
 
 varying vec4 V; //vertex
 varying vec4 E; //eye
@@ -29,6 +29,9 @@ varying vec3 N; //surface normal
 const vec4 L = vec4(1.0, 1.0, 1.0, 0.0); //light direction
 
 void main(){
+	//get the tex coord
+	gl_TexCoord[0] = gl_MultiTexCoord0;	
+
 	//get the position
 	vec4 vertCopy = gl_Vertex;
 	
@@ -37,18 +40,19 @@ void main(){
 	
 	//check to see if the position is below the sea level
 	if(vertCopy.z <= sea_level){
-		vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
+		//vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
+		vec4 bump = texture2D(region2ColorMap, gl_TexCoord[0].st);
 		
 		vertCopy.z = sea_level;
-		vertexNorm = gl_NormalMatrix * (vec3(0.0, 0.0, 1.0) + bump.xyz);
-		isWater = 1;
+		vertexNorm = gl_NormalMatrix * (normalize(vec3(0.0, 0.0, 1.0) + bump.xyz));
+		isWater = 1.0;
 		
 		V = gl_ModelViewMatrix * vertCopy;
 		E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
 		N = normalize(vertexNorm);
 	}
 	else{
-		isWater = 0;
+		isWater = 0.0;
 		
 		V = vec4(0.0, 0.0, 0.0, 0.0);
 		E = vec4(0.0, 0.0, 0.0, 0.0);
@@ -64,11 +68,8 @@ void main(){
 	vec4 lightDirection = gl_ModelViewMatrix * L;
 	vec4 normalizedLight = normalize(lightDirection);
 	
-	intensity = dot(normalizedNorm, normalizedLight);
+	intensity = dot(normalizedNorm, normalizedLight.xyz);
 	
 	//get the height
 	height = gl_Vertex.z;
-	
-	//get the tex coord
-	gl_TexCoord[0] = gl_MultiTexCoord0;
 }

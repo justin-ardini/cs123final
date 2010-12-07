@@ -26,10 +26,10 @@ struct Camera {
 
 #define APERTURE 32
 
-static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
-static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
-static const QString TERRAIN_TEX2 = "textures/terrain/rock.jpg";
-static const QString TERRAIN_TEX3 = "textures/terrain/snow.jpg";
+static const QString TERRAIN_TEX0 = "../src/textures/terrain/dirt.jpg";
+static const QString TERRAIN_TEX1 = "../src/textures/terrain/grass.jpg";
+static const QString TERRAIN_TEX2 = "../src/textures/terrain/rock.jpg";
+static const QString TERRAIN_TEX3 = "../src/textures/terrain/snow.jpg";
 
 class DrawEngine {
 public:
