@@ -40,10 +40,10 @@ void main(){
 		vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
 		
 		vertCopy.z = sea_level;
-		vertexNorm = gl_NormalMatrix * vec3(0.0, 0.0, 1.0);
+		vertexNorm = gl_NormalMatrix * (vec3(0.0, 0.0, 1.0) + bump.xyz);
 		isWater = 1;
 		
-		V = gl_ModelViewMatrix * gl_Vertex;
+		V = gl_ModelViewMatrix * vertCopy;
 		E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
 		N = normalize(vertexNorm);
 	}
@@ -61,7 +61,6 @@ void main(){
 	vec3 normalizedNorm = normalize(vertexNorm);
 	
 	//get the light direction
-	//vec4 lightDirection = gl_LightSource[0].position * (gl_ModelViewMatrix * gl_Vertex);
 	vec4 lightDirection = gl_ModelViewMatrix * L;
 	vec4 normalizedLight = normalize(lightDirection);
 	
