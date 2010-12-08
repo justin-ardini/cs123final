@@ -32,8 +32,7 @@ void GLWidget::initializeGL() {
 }
 
 void GLWidget::paintGL() {
-    draw_engine_->draw_frame(time_->elapsed(),
-                             this->width(), this->height());
+    draw_engine_->draw_frame(time_->elapsed(), this->width(), this->height());
     render_text();
     glFlush();
     swapBuffers();
@@ -79,6 +78,10 @@ void GLWidget::render_text() {
        prev_fps_ *= 0.95;
        prev_fps_ += draw_engine_->fps() * 0.05;
 
-    } this->renderText(10.0, 20.0, "FPS: " + QString::number((int)(prev_fps_)), f);
-    this->renderText(10.0, 35.0, "S: Save screenshot", f);
+    }
+    this->renderText(10.0, 20.0, "FPS: " + QString::number((int)(prev_fps_)), f);
+    this->renderText(10.0, 30.0, "Focal Distance: " + QString::number((int)(draw_engine_->focalDistance())), f);
+    this->renderText(10.0, 40.0, "Focal Range: " + QString::number((int)(draw_engine_->focalRange())), f);
+    //this->renderText(10.0, 35.0, "Reflections: ON");
+
 }

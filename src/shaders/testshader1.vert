@@ -42,21 +42,22 @@ void main(){
 	
 	//get the tex coord
 	gl_TexCoord[0] = gl_MultiTexCoord0;
+    float EPSILON = 1e-5;
 
 	//check to see if the position is below the sea level
-	if(vertCopy.z <= sea_level){
+	if (vertCopy.z <= sea_level + EPSILON) {
 		//vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
-		vec4 bump = texture2D(region2ColorMap, gl_TexCoord[0].st);
+		//vec4 bump = texture2D(region2ColorMap, gl_TexCoord[0].st);
 		
 		vertCopy.z = sea_level;
-		vertexNorm = gl_NormalMatrix * (normalize(vec3(0.0, 0.0, 1.0) + bump.xyz));
+		//vertexNorm = gl_NormalMatrix * (normalize(vec3(0.0, 0.0, 1.0) + bump.xyz));
 		isWater = 1.0;
 		
 		V = gl_ModelViewMatrix * vertCopy;
 		E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
 		N = normalize(vertexNorm);
 	}
-	else{
+	else {
 		isWater = 0.0;
 		
 		V = vec4(0.0, 0.0, 0.0, 0.0);
@@ -78,5 +79,4 @@ void main(){
 	
 	//get the height
 	height = gl_Vertex.z;
-
 }

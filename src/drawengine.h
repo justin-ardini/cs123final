@@ -49,7 +49,9 @@ public:
     void mouse_drag_event(float2 p0, float2 p1);
     void key_press_event(QKeyEvent *event);
     //getters and setters
-    float fps() { return fps_; }
+    float fps() const { return fps_; }
+    float focalDistance() const { return camera_.focalDistance; }
+    float focalRange() const { return camera_.focalRange; }
 
     //member variables
 
@@ -78,6 +80,7 @@ protected:
     float previous_time_, fps_; ///the previous time and the fps counter
     Camera camera_; ///a simple camera struct
     Terrain *terrain_;
+    bool dofEnabled; // Depth of field?
 };
 
 #endif // DRAWENGINE_H

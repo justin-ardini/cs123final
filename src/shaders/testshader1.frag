@@ -27,7 +27,7 @@ varying vec3 N; //surface normal
 
 void main(){
 	//if it is water
-	if(isWater == 1.0){
+	if (isWater == 1.0){
 		//normalize the normal
 		vec3 Nn = normalize(N);
 		
@@ -51,13 +51,11 @@ void main(){
         gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
         gl_FragColor.a = blur;
 
-		//gl_FragColor = vec4(blur,blur,blur,blur);
 		//gl_FragColor = texture2D(region1ColorMap, gl_TexCoord[0].st) * intensity;
-		
 	}
 	
 	//if not
-	else{
+	else {
 		//get the colors
 		vec4 color_1 = texture2D(region1ColorMap, gl_TexCoord[0].st);
 		vec4 color_2 = texture2D(region2ColorMap, gl_TexCoord[0].st);
@@ -77,7 +75,6 @@ void main(){
 		
 		vec4 totalColor = (color_1 * region1Weight) + (color_2 * region2Weight) + (color_3 * region3Weight) + (color_4 * region4Weight);
 		
-		//gl_FragColor = vec4(blur,blur,blur,blur);
         gl_FragColor = totalColor * intensity;
         gl_FragColor.a = blur;
 	}

@@ -38,7 +38,7 @@ using std::endl;
   @param h The viewport heigh used to alloacte the correct framebuffer size.
 
 **/
-DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context) {
+DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context), dofEnabled(true) {
     // Initialize OGL settings
     glEnable(GL_TEXTURE_2D);
 
@@ -97,7 +97,7 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     //ideally we would now check to make sure all the OGL functions we use are supported
     //by the video card.  but that's a pain to do so we're not going to.
 
-    cout << "\033Loading Resources\033" << endl;
+    cout << "Loading Resources" << endl;
     load_models();
     load_shaders();
 
@@ -113,7 +113,7 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     load_textures();
     create_fbos(w,h);
 
-    cout << "\033Rendering...\033" << endl;
+    cout << "Rendering..." << endl;
 }
 
 /**
@@ -136,11 +136,11 @@ DrawEngine::~DrawEngine() {
   initialization.
 **/
 void DrawEngine::load_models() {
-    cout << "\033Loading models...\033" << endl;
+    cout << "Loading models..." << endl;
     /* models_["dragon"].model = glmReadOBJ("/home/jardini/course/cs123_labs/lab09/src/models/xyzrgb_dragon.obj");
     glmUnitize(models_["dragon"].model);
     models_["dragon"].idx = glmList(models_["dragon"].model,GLM_SMOOTH);
-    cout << "\t \033[32m/course/cs123/data/mesh/xyzrgb_dragon_old.obj\033[0m" << endl;
+    cout << "\t  [32m/course/cs123/data/mesh/xyzrgb_dragon_old.obj [0m" << endl;
     //Create grid
     models_["grid"].idx = glGenLists(1);
     glNewList(models_["grid"].idx,GL_COMPILE);
@@ -154,7 +154,7 @@ void DrawEngine::load_models() {
         glEnd();
     }
     glEndList();
-    cout << "\t \033grid compiled\033" << endl;
+    cout << "\t  grid compiled" << endl;
     */
     models_["skybox"].idx = glGenLists(1);
     glNewList(models_["skybox"].idx,GL_COMPILE);
@@ -187,28 +187,28 @@ void DrawEngine::load_models() {
     glTexCoord3f(1.0f,-1.0f,-1.0f);glVertex3f(fExtent,-fExtent,-fExtent);
     glEnd();
     glEndList();
-    cout << "\t \033skybox compiled\033" << endl;
+    cout << "\t  skybox compiled " << endl;
 }
 /**
   @paragraph Loads shaders used by the program.  Caleed by the ctor once upon
   initialization.
 **/
 void DrawEngine::load_shaders() {
-    cout << "\033Loading shaders...\033" << endl;
+    /*cout << " Loading shaders... " << endl;
     shader_programs_["reflect"] = new QGLShaderProgram(context_);
     shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Vertex,
                                                        "shaders/reflect.vert");
     shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                        "shaders/reflect.frag");
     shader_programs_["reflect"]->link();
-    cout << "\t \033shaders/reflect\033" << endl;
+    cout << "\t  shaders/reflect " << endl;
     shader_programs_["refract"] = new QGLShaderProgram(context_);
     shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Vertex,
                                                        "shaders/refract.vert");
     shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                        "shaders/refract.frag");
     shader_programs_["refract"]->link();
-    cout << "\t \033shaders/refract\033" << endl;
+    cout << "\t  shaders/refract " << endl;*/
 
     shader_programs_["terrain"] = new QGLShaderProgram(context_);
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -216,7 +216,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                          "shaders/testshader1.frag");
     shader_programs_["terrain"]->link();
-    cout << "\t \033shaders/terrain\033" << endl;
+    cout << "\t  shaders/terrain " << endl;
 
     shader_programs_["downsample"] = new QGLShaderProgram(context_);
     shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -224,7 +224,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/downsample.frag");
     shader_programs_["downsample"]->link();
-    cout << "\t \033shaders/downsample\033" << endl;
+    cout << "\t  shaders/downsample " << endl;
 
     shader_programs_["blur_x"] = new QGLShaderProgram(context_);
     shader_programs_["blur_x"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -232,7 +232,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["blur_x"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/blurx.frag");
     shader_programs_["blur_x"]->link();
-    cout << "\t \033shaders/blurx\033" << endl;
+    cout << "\t  shaders/blurx " << endl;
 
     shader_programs_["blur_y"] = new QGLShaderProgram(context_);
     shader_programs_["blur_y"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -240,7 +240,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["blur_y"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/blury.frag");
     shader_programs_["blur_y"]->link();
-    cout << "\t \033shaders/blury\033" << endl;
+    cout << "\t  shaders/blury " << endl;
 
     shader_programs_["lerp"] = new QGLShaderProgram(context_);
     shader_programs_["lerp"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -248,7 +248,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["lerp"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/lerp.frag");
     shader_programs_["lerp"]->link();
-    cout << "\t \033shaders/lerp\033" << endl;
+    cout << "\t  shaders/lerp " << endl;
 
     shader_programs_["renderblur"] = new QGLShaderProgram(context_);
     shader_programs_["renderblur"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -256,7 +256,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["renderblur"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/renderblur.frag");
     shader_programs_["renderblur"]->link();
-    cout << "\t \033shaders/renderblur\033" << endl;
+    cout << "\t  shaders/renderblur " << endl;
 }
 
 /**
@@ -264,41 +264,41 @@ void DrawEngine::load_shaders() {
   initialization.
 **/
 void DrawEngine::load_textures() {
-    cout << "\033Loading textures...\033" << endl;
+    cout << "Loading textures..." << endl;
     QList<QFile *> fileList;
 
     // Alpine
 
-    fileList.append(new QFile("../src/textures/alpine/alpine_west.bmp"));
-    fileList.append(new QFile("../src/textures/alpine/alpine_east.bmp"));
-    fileList.append(new QFile("../src/textures/alpine/alpine_up.bmp"));
-    fileList.append(new QFile("../src/textures/alpine/alpine_down.bmp"));
-    fileList.append(new QFile("../src/textures/alpine/alpine_south.bmp"));
-    fileList.append(new QFile("../src/textures/alpine/alpine_north.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_west.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_east.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_up.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_down.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
+    fileList.append(new QFile("textures/alpine/alpine_north.bmp"));
     /*
     // Lagoon
-    fileList.append(new QFile("../src/textures/lagoon/lagoon_west.bmp"));
-    fileList.append(new QFile("../src/textures/lagoon/lagoon_east.bmp"));
-    fileList.append(new QFile("../src/textures/lagoon/lagoon_up.bmp"));
-    fileList.append(new QFile("../src/textures/lagoon/lagoon_down.bmp"));
-    fileList.append(new QFile("../src/textures/lagoon/lagoon_south.bmp"));
-    fileList.append(new QFile("../src/textures/lagoon/lagoon_north.bmp")); */
+    fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_east.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_up.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_down.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_south.bmp"));
+    fileList.append(new QFile("textures/lagoon/lagoon_north.bmp")); */
     /*
     // Hourglass
-    fileList.append(new QFile("../src/textures/hourglass/hourglass_west.bmp"));
-    fileList.append(new QFile("../src/textures/hourglass/hourglass_east.bmp"));
-    fileList.append(new QFile("../src/textures/hourglass/hourglass_up.bmp"));
-    fileList.append(new QFile("../src/textures/hourglass/hourglass_down.bmp"));
-    fileList.append(new QFile("../src/textures/hourglass/hourglass_south.bmp"));
-    fileList.append(new QFile("../src/textures/hourglass/hourglass_north.bmp")); */
+    fileList.append(new QFile("textures/hourglass/hourglass_west.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_east.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_up.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_down.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_south.bmp"));
+    fileList.append(new QFile("textures/hourglass/hourglass_north.bmp")); */
     // Island
     /*
-    fileList.append(new QFile("../src/textures/islands/islands_west.bmp"));
-    fileList.append(new QFile("../src/textures/islands/islands_east.bmp"));
-    fileList.append(new QFile("../src/textures/islands/islands_up.bmp"));
-    fileList.append(new QFile("../src/textures/islands/islands_down.bmp"));
-    fileList.append(new QFile("../src/textures/islands/islands_south.bmp"));
-    fileList.append(new QFile("../src/textures/islands/islands_north.bmp"));*/
+    fileList.append(new QFile("textures/islands/islands_west.bmp"));
+    fileList.append(new QFile("textures/islands/islands_east.bmp"));
+    fileList.append(new QFile("textures/islands/islands_up.bmp"));
+    fileList.append(new QFile("textures/islands/islands_down.bmp"));
+    fileList.append(new QFile("textures/islands/islands_south.bmp"));
+    fileList.append(new QFile("textures/islands/islands_north.bmp"));*/
 
     GLuint terrainTextures[4];
     terrainTextures[0] = load_texture(TERRAIN_TEX0);
@@ -332,8 +332,8 @@ GLuint DrawEngine::load_texture(const QFile &file) {
     texture = QGLWidget::convertToGLFormat(image);
 
     glGenTextures(1, &toReturn);
-    glActiveTexture(GL_TEXTURE0+toReturn );
-    glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0+toReturn);
+    glActiveTexture(GL_TEXTURE0 + toReturn);
+    glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0 + toReturn);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -406,8 +406,6 @@ void draw_quad() {
   @paragraph Should render one frame at the given elapsed time in the program.
   Assumes that the GL context is valid when this method is called.
 
-  @todo Finish filling this in
-
   @param time: the current program time in milliseconds
   @param w:    the viewport width
   @param h:    the viewport height
@@ -416,22 +414,16 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
     //Render the scene to framebuffer 0, tracking how much we need to blur later
     framebuffer_objects_["fbo_0"]->bind();
-
     perspective_camera(w, h);
+    glActiveTexture(GL_TEXTURE0);
     render_scene(time, w, h);
     framebuffer_objects_["fbo_0"]->release();
 
-    // Copy the rendered scene into framebuffer 1
-    //framebuffer_objects_["fbo_0"]->blitFramebuffer(framebuffer_objects_["fbo_1"],
-    //                                               QRect(0,0,w,h),framebuffer_objects_["fbo_0"],
-    //                                               QRect(0,0,w,h),GL_COLOR_BUFFER_BIT,GL_NEAREST);
-
     orthogonal_camera(w, h);
 
-    if (true) {
+    if (dofEnabled) {
         // Second Pass: Downsampling
         //framebuffer_objects_["fbo_1"]->bind();
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         //shader_programs_["downsample"]->bind();
         //glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         //glViewport(0, 0, w / 2, h / 2);
@@ -442,23 +434,23 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glViewport(0, 0, w, h);
         // Third pass: Gaussian filtering along the X axis
         framebuffer_objects_["fbo_2"]->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader_programs_["blur_x"]->bind();
         shader_programs_["blur_x"]->setUniformValue("Width", w * 2);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_x"]->release();
         framebuffer_objects_["fbo_2"]->release();
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // Fourth pass: Gaussian filtering along the Y axis
         framebuffer_objects_["fbo_3"]->bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader_programs_["blur_y"]->bind();
         shader_programs_["blur_y"]->setUniformValue("Height", h * 2);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_y"]->release();
         framebuffer_objects_["fbo_3"]->release();
+        glBindTexture(GL_TEXTURE_2D, 0);
 
         // Fifth pass: final compositing
         //framebuffer_objects_["fbo_4"]->bind();
@@ -466,7 +458,6 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         shader_programs_["lerp"]->bind();
         shader_programs_["lerp"]->setUniformValue("Tex0", 0);
         shader_programs_["lerp"]->setUniformValue("Tex1", 1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         glActiveTexture(GL_TEXTURE1);
@@ -493,18 +484,18 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glEnd();
 
         shader_programs_["lerp"]->release();
+
         //framebuffer_objects_["fbo_4"]->release();
 
-        //glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_4"]->texture());
-        //textured_quad(w, h, true);
-        //glBindTexture(GL_TEXTURE_2D, 0);
-    }
-    /*else {
+    } else {
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         textured_quad(w, h, true);
         glBindTexture(GL_TEXTURE_2D, 0);
-    } */
+    }
 
+    // Make sure texture0 is active for text rendering afterwards
+    glActiveTexture(GL_TEXTURE0);
+    //glEnable(GL_TEXTURE_2D);
 }
 
 
@@ -543,8 +534,6 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["terrain"]->release();
 
     /*
-    glActiveTexture(GL_TEXTURE0);
-
     shader_programs_["refract"]->bind();
     shader_programs_["refract"]->setUniformValue("CubeMap", GL_TEXTURE0);
     shader_programs_["refract"]->release();
@@ -555,7 +544,8 @@ void DrawEngine::render_scene(float time,int w,int h) {
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
-    glBindTexture(GL_TEXTURE_CUBE_MAP,0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
@@ -682,7 +672,7 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
         texture = texture.scaledToWidth(1024,Qt::SmoothTransformation);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,3,3,texture.width(),texture.height(),0,GL_RGBA,GL_UNSIGNED_BYTE,texture.bits());
         gluBuild2DMipmaps(GL_TEXTURE_CUBE_MAP_POSITIVE_X +i, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
-        cout << "\t \033" << files[i]->fileName().toStdString() << "\033" << endl;
+        cout << "\t  " << files[i]->fileName().toStdString() << " " << endl;
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MIN_FILTER,GL_NEAREST_MIPMAP_NEAREST);
     glTexParameteri(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_MAG_FILTER,GL_NEAREST_MIPMAP_NEAREST);
@@ -709,6 +699,9 @@ void DrawEngine::key_press_event(QKeyEvent *event) {
         break;
     case Qt::Key_Right:
         camera_.focalRange += 1.0f;
+        break;
+    case Qt::Key_D:
+        dofEnabled = !dofEnabled;
         break;
     }
 }
