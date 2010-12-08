@@ -3,6 +3,7 @@
 
 #include <QHash>
 #include <QString>
+#define GL_GLEXT_LEGACY // no glext.h, we have our own
 #include <qgl.h>
 #include "glm.h"
 #include "common.h"
@@ -22,14 +23,17 @@ struct Model {
 struct Camera {
     float3 eye, center, up;
     float fovy, near, far;
+    float focalDistance, focalRange;
 };
 
-#define APERTURE 32
+#define DEFAULT_DISTANCE 20.0f
+#define DEFAULT_RANGE 40.0f
 
-static const QString TERRAIN_TEX0 = "../src/textures/terrain/dirt.jpg";
-static const QString TERRAIN_TEX1 = "../src/textures/terrain/grass.jpg";
-static const QString TERRAIN_TEX2 = "../src/textures/terrain/rock.jpg";
-static const QString TERRAIN_TEX3 = "../src/textures/terrain/snow.jpg";
+static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
+static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
+static const QString TERRAIN_TEX2 = "textures/terrain/rock.jpg";
+static const QString TERRAIN_TEX3 = "textures/terrain/snow.jpg";
+
 
 class DrawEngine {
 public:
@@ -45,7 +49,9 @@ public:
     void mouse_drag_event(float2 p0, float2 p1);
     void key_press_event(QKeyEvent *event);
     //getters and setters
-    float fps() { return fps_; }
+    float fps() const { return fps_; }
+    float focalDistance() const { return camera_.focalDistance; }
+    float focalRange() const { return camera_.focalRange; }
 
     //member variables
 
@@ -74,6 +80,7 @@ protected:
     float previous_time_, fps_; ///the previous time and the fps counter
     Camera camera_; ///a simple camera struct
     Terrain *terrain_;
+    bool dofEnabled; // Depth of field?
 };
 
 #endif // DRAWENGINE_H

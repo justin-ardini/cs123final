@@ -18,6 +18,7 @@ uniform float region4Min;
 //varying variables
 varying float intensity;
 varying float height;
+varying float blur;
 varying float isWater;
 
 varying vec4 V; //vertex
@@ -26,7 +27,7 @@ varying vec3 N; //surface normal
 
 void main(){
 	//if it is water
-	if(isWater == 1.0){
+	if (isWater == 1.0){
 		//normalize the normal
 		vec3 Nn = normalize(N);
 		
@@ -46,13 +47,20 @@ void main(){
 		vec4 env_color2 = textureCube(CubeMap, R2);
 		
 		//mix the two colors
+<<<<<<< HEAD:src/shaders/testshader1.frag
 		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
 		//gl_FragColor = texture2D(bumpmap, gl_TexCoord[0].st) * intensity;
 		
+=======
+        gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+        gl_FragColor.a = blur;
+
+		//gl_FragColor = texture2D(region1ColorMap, gl_TexCoord[0].st) * intensity;
+>>>>>>> dac1121c80b736a347adc86a3e8bb78f37f36d38:src/shaders/testshader1.frag
 	}
 	
 	//if not
-	else{
+	else {
 		//get the colors
 		vec4 color_1 = texture2D(region1ColorMap, gl_TexCoord[0].st);
 		vec4 color_2 = texture2D(region2ColorMap, gl_TexCoord[0].st);
@@ -72,6 +80,7 @@ void main(){
 		
 		vec4 totalColor = (color_1 * region1Weight) + (color_2 * region2Weight) + (color_3 * region3Weight) + (color_4 * region4Weight);
 		
-		gl_FragColor = totalColor * intensity;
+        gl_FragColor = totalColor * intensity;
+        gl_FragColor.a = blur;
 	}
 }

@@ -1,4 +1,6 @@
 #pragma once
+#define GL_GLEXT_LEGACY // no glext.h, we have our own
+#include <qgl.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265f
