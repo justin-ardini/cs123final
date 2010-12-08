@@ -77,6 +77,9 @@ private:
 
     //tiling factor must divide 2^depth
     TerrainRegion g_regions[TERRAIN_REGIONS_COUNT];
+
+    float offsetX;
+    float offsetY;
 };
 
 #endif // TERRAIN_H

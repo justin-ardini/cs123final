@@ -16,6 +16,9 @@ uniform float region2Min;
 uniform float region3Min;
 uniform float region4Min;
 
+uniform float offsetX;
+uniform float offsetY;
+
 //varying variables
 varying float intensity;
 varying float height;
@@ -32,53 +35,28 @@ const vec4 L = vec4(1.0, 1.0, 1.0, 0.0); //light direction
 
 void main(){
 	//get the tex coord
-	gl_TexCoord[0] = gl_MultiTexCoord0;	
-
-	//get the position
-	vec4 vertCopy = gl_Vertex;
+	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
 	//get the norm of the vertex
 	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
 	
-	//get the tex coord
-	gl_TexCoord[0] = gl_MultiTexCoord0;
-    float EPSILON = 1e-5;
-
+	V = gl_ModelViewMatrix * gl_Vertex;
+	E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
+	N = normalize(vertexNorm);
+	
+	float EPSILON = 1e-5;
+	
 	//check to see if the position is below the sea level
-<<<<<<< HEAD:src/shaders/testshader1.vert
-	if(vertCopy.z <= sea_level){
-		//vec3 bump = texture2D(bumpmap, gl_TexCoord[0].st).xyz;
-		//vec3 bump = texture2D(region2ColorMap, gl_TexCoord[0].st).xyz;
-=======
-	if (vertCopy.z <= sea_level + EPSILON) {
-		//vec4 bump = texture2D(bumpmap, gl_TexCoord[0].st);
-		//vec4 bump = texture2D(region2ColorMap, gl_TexCoord[0].st);
->>>>>>> dac1121c80b736a347adc86a3e8bb78f37f36d38:src/shaders/testshader1.vert
-		
-		vertexNorm = gl_NormalMatrix * vec3(0.0, 0.0, 0.1);
-		//vertexNorm = gl_NormalMatrix * bump;
-		vertCopy.z = sea_level;
-<<<<<<< HEAD:src/shaders/testshader1.vert
-=======
-		//vertexNorm = gl_NormalMatrix * (normalize(vec3(0.0, 0.0, 1.0) + bump.xyz));
->>>>>>> dac1121c80b736a347adc86a3e8bb78f37f36d38:src/shaders/testshader1.vert
+	if (gl_Vertex.z <= sea_level + EPSILON) {
 		isWater = 1.0;
-		
-		V = gl_ModelViewMatrix * vertCopy;
-		E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
-		N = normalize(vertexNorm);
 	}
 	else {
 		isWater = 0.0;
-		
-		V = vec4(0.0, 0.0, 0.0, 0.0);
-		E = vec4(0.0, 0.0, 0.0, 0.0);
-		N = vec3(0.0, 0.0, 0.0);
 	}
 	
-	gl_Position = gl_ModelViewProjectionMatrix * vertCopy;
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 	
-    blur = clamp(abs(-gl_Position.z - focalDistance) / focalRange, 0.0, 1.0);
+	blur = clamp(abs(-gl_Position.z - focalDistance) / focalRange, 0.0, 1.0);
 	
 	vec3 normalizedNorm = normalize(vertexNorm);
 	

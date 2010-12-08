@@ -1,11 +1,13 @@
 //uniform variables
 uniform samplerCube CubeMap;
 
-uniform sampler2D bumpmap;
+
 uniform sampler2D region1ColorMap;
 uniform sampler2D region2ColorMap;
 uniform sampler2D region3ColorMap;
 uniform sampler2D region4ColorMap;
+uniform sampler2D bumpmap;
+
 uniform float region1Max;
 uniform float region2Max;
 uniform float region3Max;
@@ -14,6 +16,9 @@ uniform float region1Min;
 uniform float region2Min;
 uniform float region3Min;
 uniform float region4Min;
+
+uniform float offsetX;
+uniform float offsetY;
 
 //varying variables
 varying float intensity;
@@ -28,8 +33,17 @@ varying vec3 N; //surface normal
 void main(){
 	//if it is water
 	if (isWater == 1.0){
+		vec2 tempVec2 = gl_TexCoord[0].st + vec2(offsetX, offsetY);
+		if(tempVec2.x > 1.0){
+			tempVec2.x -= 1.0;
+		}
+		if(tempVec2.y > 1.0){
+			tempVec2.y -= 1.0;
+		}
+		vec4 tempVec = texture2D(region3ColorMap, tempVec2);
+		
 		//normalize the normal
-		vec3 Nn = normalize(N);
+		vec3 Nn = normalize(N + (gl_NormalMatrix * tempVec.xyz));
 		
 		//get the incoming vector
 		vec3 I = normalize(V.xyz - E.xyz);
@@ -47,16 +61,10 @@ void main(){
 		vec4 env_color2 = textureCube(CubeMap, R2);
 		
 		//mix the two colors
-<<<<<<< HEAD:src/shaders/testshader1.frag
-		gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
-		//gl_FragColor = texture2D(bumpmap, gl_TexCoord[0].st) * intensity;
-		
-=======
-        gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
-        gl_FragColor.a = blur;
+	        gl_FragColor = mix(mix(env_color, env_color2, 0.2), vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
+        	gl_FragColor.a = blur;
 
-		//gl_FragColor = texture2D(region1ColorMap, gl_TexCoord[0].st) * intensity;
->>>>>>> dac1121c80b736a347adc86a3e8bb78f37f36d38:src/shaders/testshader1.frag
+		//gl_FragColor = texture2D(bumpmap, gl_TexCoord[0].st);
 	}
 	
 	//if not

@@ -520,13 +520,10 @@ void DrawEngine::render_scene(float time,int w,int h) {
 
     // set the uniform values for the terrain shader
     shader_programs_["terrain"]->bind();
-<<<<<<< HEAD:src/drawengine.cpp
+
     glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
-=======
-    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
->>>>>>> dac1121c80b736a347adc86a3e8bb78f37f36d38:src/drawengine.cpp
+
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
     shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
     shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);

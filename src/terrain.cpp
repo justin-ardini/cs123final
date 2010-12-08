@@ -13,6 +13,9 @@ Terrain::Terrain() {
     int terrain_size = mSize * mSize;
     terrain = new float3[terrain_size];
     normalmap = new float3[terrain_size];
+
+    offsetX = 0.0f;
+    offsetY = 0.0f;
 }
 
 
@@ -40,7 +43,18 @@ void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
     shader->setUniformValue("region4Max", g_regions[3].max);
     shader->setUniformValue("sea_level", 5.4f);
     shader->setUniformValue("CubeMap", 0);
-    shader->setUniformValue("bumpmap", 1);
+    shader->setUniformValue("bumpmap", bumpmap);
+
+    shader->setUniformValue("offsetX", offsetX);
+    shader->setUniformValue("offsetY", offsetY);
+
+    offsetX = offsetX + 0.001f;
+    offsetY = offsetY + 0.001f;
+
+    if(offsetX >= 1.0f){
+        offsetX = 0.0f;
+        offsetY = 0.0f;
+    }
 }
 
 
@@ -215,6 +229,12 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
     g_regions[1] = TerrainRegion(minHeight + rangeIncrement, minHeight + rangeIncrement * 2, 0, "/course/cs123/pub/lab07/textures/grass.JPG");
     g_regions[2] = TerrainRegion(minHeight + rangeIncrement * 2, minHeight + rangeIncrement * 3, 0, "/course/cs123/pub/lab07/textures/rock.JPG");
     g_regions[3] = TerrainRegion(minHeight + rangeIncrement * 3, minHeight + rangeIncrement * 4, 0, "/course/cs123/pub/lab07/textures/snow.JPG");
+
+    for(int location = 0; location < (mSize * mSize); location++){
+        if(terrain[location].z <= 5.4f){
+            terrain[location].z = 5.4f;
+        }
+    }
 }
 
 /**
@@ -230,6 +250,12 @@ void Terrain::populateNormals() {
                 normals[i] = findnormal(surround[i], surround[(i+1)%8]);
             }
             normalmap[row*mSize+column] = averageNormal(normals, numVecs).getNormalized();
+        }
+    }
+
+    for(int location = 0; location < (mSize * mSize); location++){
+        if(terrain[location].z <= 5.4f){
+            normalmap[location] = float3(0.0f, 0.0f, 1.0f);
         }
     }
 }
