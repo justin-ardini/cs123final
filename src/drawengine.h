@@ -69,7 +69,8 @@ protected:
     void load_shaders();
     GLuint load_cube_map(QList<QFile *> files);
     void create_fbos(int w, int h);
-    void render_water();
+    void render_water(bool flip);
+    void render_reflections();
 
     //member variables
     QHash<QString, QGLShaderProgram *> shader_programs_; // hash map of all shader programs

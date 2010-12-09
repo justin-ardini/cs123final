@@ -376,8 +376,10 @@ void DrawEngine::create_fbos(int w,int h) {
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    framebuffer_objects_["fbo_4"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
+    // Do reflections need a depth buffer?
+    framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
+    //framebuffer_objects_["reflection"]->format().setSamples(16);
 }
 
 /**
@@ -407,7 +409,26 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 **/
 void DrawEngine::draw_frame(float time,int w,int h) {
     fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
-    //Render the scene to framebuffer 0, tracking how much we need to blur later
+    // Render just the reflected scene about sea level to a framebuffer
+    framebuffer_objects_["reflection"]->bind();
+    perspective_camera(w, h);
+    glViewport(0, 0, w, h);
+    //glLoadIdentity();
+    glActiveTexture(GL_TEXTURE0);
+    render_reflections();
+    framebuffer_objects_["reflection"]->release();
+
+    // Reflection testing
+    if (false) {
+        orthogonal_camera(w, h);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
+        textured_quad(w, h, true);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        return;
+    }
+
+    // Render the scene to framebuffer 0, tracking how much we need to blur later
     framebuffer_objects_["fbo_0"]->bind();
     perspective_camera(w, h);
     // Ensure that GL_TEXTURE0 is active before rendering the scene!
@@ -456,7 +477,6 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // Fifth pass: final compositing
-        //framebuffer_objects_["fbo_4"]->bind();
         glDrawBuffer(GL_BACK);
         shader_programs_["lerp"]->bind();
         shader_programs_["lerp"]->setUniformValue("Tex0", 0);
@@ -488,8 +508,6 @@ void DrawEngine::draw_frame(float time,int w,int h) {
 
         shader_programs_["lerp"]->release();
 
-        //framebuffer_objects_["fbo_4"]->release();
-
     } else {
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         textured_quad(w, h, true);
@@ -500,6 +518,50 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     glActiveTexture(GL_TEXTURE0);
 }
 
+
+/**
+    Renders the reflections of the scene about the water level
+**/
+void DrawEngine::render_reflections() {
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_TEXTURE_CUBE_MAP);
+    glBindTexture(GL_TEXTURE_CUBE_MAP,textures_["cube_map_1"]);
+    glCallList(models_["skybox"].idx);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+
+    glPushMatrix();
+
+    // First, render the terrain with the terrain shader
+    shader_programs_["terrain"]->bind();
+    glActiveTexture(GL_TEXTURE0);
+    terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
+    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
+    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
+
+    // Reflect the scene about the z = SEA_LEVEL plane
+    glTranslatef(0.0f, -28.0f, 0.0f);
+    glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
+    glScalef(3.5f, 3.5f, 3.5f);
+    glTranslatef(0, 0, SEA_LEVEL);
+    glScalef(1.0f, 1.0f, -1.0f);
+    glTranslatef(0, 0, -SEA_LEVEL);
+    //double plane[4] = {0.0, 0.0, SEA_LEVEL, 0.0}; //water at z = SEA_LEVEL
+    //glEnable(GL_CLIP_PLANE0);
+    //glClipPlane(GL_CLIP_PLANE0, plane);
+    terrain_->render();
+    //glDisable(GL_CLIP_PLANE0);
+    shader_programs_["terrain"]->release();
+
+    glPopMatrix();
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glDisable(GL_TEXTURE_CUBE_MAP);
+}
 
 
 /**
@@ -542,9 +604,11 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["water"]->setUniformValue("bumpMap", 0);
     shader_programs_["water"]->setUniformValue("offsetX", offsetX_);
     shader_programs_["water"]->setUniformValue("offsetY", offsetY_);
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
-    render_water();
+    //glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
+    render_water(false);
     shader_programs_["water"]->release();
 
     glPopMatrix();
@@ -568,21 +632,21 @@ void DrawEngine::render_scene(float time,int w,int h) {
 /**
   Renders the water as a large quad.
   **/
-void DrawEngine::render_water() {
+void DrawEngine::render_water(bool flip) {
     glBegin(GL_QUADS);
-        glTexCoord2f(0, 0);
+        glTexCoord2f(0.0f, flip ? 1.0f : 0.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(-WATER_QUAD_SIZE, -WATER_QUAD_SIZE, SEA_LEVEL);
 
-        glTexCoord2f(1, 0);
+        glTexCoord2f(1.0f, flip ? 1.0f : 0.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(WATER_QUAD_SIZE, -WATER_QUAD_SIZE, SEA_LEVEL);
 
-        glTexCoord2f(1, 1);
+        glTexCoord2f(1.0f, flip ? 0.0f : 1.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
 
-        glTexCoord2f(0, 1);
+        glTexCoord2f(0.0f, flip ? 0.0f : 1.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(-WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
     glEnd();
@@ -602,14 +666,14 @@ void DrawEngine::textured_quad(int w,int h,bool flip) {
     glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
     glBegin(GL_QUADS);
-    glTexCoord2f(0.0f,flip ? 1.0f : 0.0f);
-    glVertex2f(0.0f,0.0f);
-    glTexCoord2f(1.0f,flip ? 1.0f : 0.0f);
-    glVertex2f(w,0.0f);
-    glTexCoord2f(1.0f,flip ? 0.0f : 1.0f);
-    glVertex2f(w,h);
-    glTexCoord2f(0.0f,flip ? 0.0f : 1.0f);
-    glVertex2f(0.0f,h);
+    glTexCoord2f(0.0f, flip ? 1.0f : 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glTexCoord2f(1.0f, flip ? 1.0f : 0.0f);
+    glVertex2f(w, 0.0f);
+    glTexCoord2f(1.0f, flip ? 0.0f : 1.0f);
+    glVertex2f(w, h);
+    glTexCoord2f(0.0f, flip ? 0.0f : 1.0f);
+    glVertex2f(0.0f, h);
     glEnd();
 }
 
