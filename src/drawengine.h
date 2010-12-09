@@ -69,7 +69,7 @@ protected:
     void load_shaders();
     GLuint load_cube_map(QList<QFile *> files);
     void create_fbos(int w, int h);
-    void render_terrain();
+    void render_water();
 
     //member variables
     QHash<QString, QGLShaderProgram *> shader_programs_; // hash map of all shader programs
@@ -82,6 +82,8 @@ protected:
     Terrain *terrain_;
     bool dofEnabled_; // Depth of field?
     bool depthmapEnabled_; // Show depth map?
+    float offsetX_;
+    float offsetY_;
 };
 
 #endif // DRAWENGINE_H

@@ -34,6 +34,10 @@ enum SKYBOX_TYPE {
 
 // Change this define to change the skybox texture
 #define SKYBOX SKYBOX_ISLAND
+// Change this to change the water level
+#define SEA_LEVEL 7.3f
+// Change this to change the water quad size
+#define WATER_QUAD_SIZE 10.0f
 
 
 /**
@@ -48,7 +52,8 @@ enum SKYBOX_TYPE {
   @param h The viewport heigh used to alloacte the correct framebuffer size.
 
 **/
-DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context), dofEnabled_(true), depthmapEnabled_(false) {
+DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context),
+        dofEnabled_(true), depthmapEnabled_(false), offsetX_(0.0f), offsetY_(0.0f) {
     // Initialize OGL settings
     glEnable(GL_TEXTURE_2D);
 
@@ -206,11 +211,19 @@ void DrawEngine::load_models() {
 void DrawEngine::load_shaders() {
     shader_programs_["terrain"] = new QGLShaderProgram(context_);
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                         "shaders/testshader1.vert");
+                                                         "shaders/terrain.vert");
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                         "shaders/testshader1.frag");
+                                                         "shaders/terrain.frag");
     shader_programs_["terrain"]->link();
     cout << "\t  shaders/terrain " << endl;
+
+    shader_programs_["water"] = new QGLShaderProgram(context_);
+    shader_programs_["water"]->addShaderFromSourceFile(QGLShader::Vertex,
+                                                         "shaders/water.vert");
+    shader_programs_["water"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                         "shaders/water.frag");
+    shader_programs_["water"]->link();
+    cout << "\t  shaders/water " << endl;
 
     shader_programs_["downsample"] = new QGLShaderProgram(context_);
     shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -250,7 +263,7 @@ void DrawEngine::load_shaders() {
     shader_programs_["depthmap"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/depthmap.frag");
     shader_programs_["depthmap"]->link();
-    cout << "\t  shaders/renderblur " << endl;
+    cout << "\t  shaders/depthmap " << endl;
 }
 
 /**
@@ -507,22 +520,43 @@ void DrawEngine::render_scene(float time,int w,int h) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    // set the uniform values for the terrain shader
+    glPushMatrix();
+
+    // First, render the terrain with the terrain shader
     shader_programs_["terrain"]->bind();
-
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
-
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
     shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
     shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
-    glPushMatrix();
+
     glTranslatef(0, -28.f, 0.f);
     glRotatef(270, 1, 0, 0);
     glScalef(3.5, 3.5, 3.5);
     terrain_->render();
-    glPopMatrix();
     shader_programs_["terrain"]->release();
+
+    // Then render the water with the water shader
+    shader_programs_["water"]->bind();
+    shader_programs_["water"]->setUniformValue("bumpMap", 0);
+    shader_programs_["water"]->setUniformValue("cubeMap", 0);
+    shader_programs_["water"]->setUniformValue("bumpMap", 0);
+    shader_programs_["water"]->setUniformValue("offsetX", offsetX_);
+    shader_programs_["water"]->setUniformValue("offsetY", offsetY_);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
+    render_water();
+    shader_programs_["water"]->release();
+
+    glPopMatrix();
+
+    // Update the water animation offset
+    offsetX_ = offsetX_ + 0.001f;
+    offsetY_ = offsetY_ + 0.001f;
+
+    if(offsetX_ >= 1.0f){
+        offsetX_ = 0.0f;
+        offsetY_ = 0.0f;
+    }
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -531,6 +565,28 @@ void DrawEngine::render_scene(float time,int w,int h) {
     glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
+/**
+  Renders the water as a large quad.
+  **/
+void DrawEngine::render_water() {
+    glBegin(GL_QUADS);
+        glTexCoord2f(0, 0);
+        glNormal3f(0, 0, 1);
+        glVertex3f(-WATER_QUAD_SIZE, -WATER_QUAD_SIZE, SEA_LEVEL);
+
+        glTexCoord2f(1, 0);
+        glNormal3f(0, 0, 1);
+        glVertex3f(WATER_QUAD_SIZE, -WATER_QUAD_SIZE, SEA_LEVEL);
+
+        glTexCoord2f(1, 1);
+        glNormal3f(0, 0, 1);
+        glVertex3f(WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
+
+        glTexCoord2f(0, 1);
+        glNormal3f(0, 0, 1);
+        glVertex3f(-WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
+    glEnd();
+}
 
 /**
   @paragraph Draws a textured quad. The texture most be bound and unbound

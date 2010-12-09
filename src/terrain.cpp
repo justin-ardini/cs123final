@@ -3,8 +3,6 @@ using std::string;
 using std::cout;
 using std::endl;
 
-// Change this to change the water level
-#define SEA_LEVEL 7.3f
 // Change this to change the level at which terrain changes from grass to rock, rock to ice
 #define TERRAIN_HEIGHT 1.8f
 
@@ -46,20 +44,7 @@ void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
     shader->setUniformValue("region2Max", g_regions[1].max);
     shader->setUniformValue("region3Max", g_regions[2].max);
     shader->setUniformValue("region4Max", g_regions[3].max);
-    shader->setUniformValue("sea_level", SEA_LEVEL);
-    shader->setUniformValue("CubeMap", 0);
-    shader->setUniformValue("bumpmap", bumpmap);
-
-    shader->setUniformValue("offsetX", offsetX);
-    shader->setUniformValue("offsetY", offsetY);
-
-    offsetX = offsetX + 0.001f;
-    offsetY = offsetY + 0.001f;
-
-    if(offsetX >= 1.0f){
-        offsetX = 0.0f;
-        offsetY = 0.0f;
-    }
+    shader->setUniformValue("cubeMap", 0);
 }
 
 
@@ -242,11 +227,11 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
     g_regions[3] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 3,
                                  minHeight - TERRAIN_HEIGHT + rangeIncrement * 4, 0, "/course/cs123/pub/lab07/textures/snow.JPG");
 
-    for(int location = 0; location < (mSize * mSize); location++){
+    /* for(int location = 0; location < (mSize * mSize); location++){
         if(terrain[location].z <= SEA_LEVEL){
             terrain[location].z = SEA_LEVEL;
         }
-    }
+    } */
 }
 
 /**
@@ -265,11 +250,11 @@ void Terrain::populateNormals() {
         }
     }
 
-    for(int location = 0; location < (mSize * mSize); location++){
+    /* for(int location = 0; location < (mSize * mSize); location++){
         if(terrain[location].z <= SEA_LEVEL){
             normalmap[location] = float3(0.0f, 0.0f, 1.0f);
         }
-    }
+    } */
 }
 
 /**
