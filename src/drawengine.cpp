@@ -25,6 +25,16 @@
 using std::cout;
 using std::endl;
 
+enum SKYBOX_TYPE {
+    SKYBOX_ALPINE,
+    SKYBOX_ISLAND,
+    SKYBOX_HOURGLASS,
+    SKYBOX_LAGOON
+};
+
+// Change this define to change the skybox texture
+#define SKYBOX SKYBOX_ISLAND
+
 
 /**
   @paragraph DrawEngine ctor.  Expects a Valid OpenGL context and the viewport's current
@@ -38,7 +48,7 @@ using std::endl;
   @param h The viewport heigh used to alloacte the correct framebuffer size.
 
 **/
-DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context), dofEnabled(true) {
+DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context), dofEnabled_(true), depthmapEnabled_(false) {
     // Initialize OGL settings
     glEnable(GL_TEXTURE_2D);
 
@@ -194,22 +204,6 @@ void DrawEngine::load_models() {
   initialization.
 **/
 void DrawEngine::load_shaders() {
-    /*cout << " Loading shaders... " << endl;
-    shader_programs_["reflect"] = new QGLShaderProgram(context_);
-    shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                       "shaders/reflect.vert");
-    shader_programs_["reflect"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "shaders/reflect.frag");
-    shader_programs_["reflect"]->link();
-    cout << "\t  shaders/reflect " << endl;
-    shader_programs_["refract"] = new QGLShaderProgram(context_);
-    shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                       "shaders/refract.vert");
-    shader_programs_["refract"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                       "shaders/refract.frag");
-    shader_programs_["refract"]->link();
-    cout << "\t  shaders/refract " << endl;*/
-
     shader_programs_["terrain"] = new QGLShaderProgram(context_);
     shader_programs_["terrain"]->addShaderFromSourceFile(QGLShader::Vertex,
                                                          "shaders/testshader1.vert");
@@ -250,12 +244,12 @@ void DrawEngine::load_shaders() {
     shader_programs_["lerp"]->link();
     cout << "\t  shaders/lerp " << endl;
 
-    shader_programs_["renderblur"] = new QGLShaderProgram(context_);
-    shader_programs_["renderblur"]->addShaderFromSourceFile(QGLShader::Vertex,
+    shader_programs_["depthmap"] = new QGLShaderProgram(context_);
+    shader_programs_["depthmap"]->addShaderFromSourceFile(QGLShader::Vertex,
                                                             "shaders/downsample.vert");
-    shader_programs_["renderblur"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                            "shaders/renderblur.frag");
-    shader_programs_["renderblur"]->link();
+    shader_programs_["depthmap"]->addShaderFromSourceFile(QGLShader::Fragment,
+                                                            "shaders/depthmap.frag");
+    shader_programs_["depthmap"]->link();
     cout << "\t  shaders/renderblur " << endl;
 }
 
@@ -267,38 +261,40 @@ void DrawEngine::load_textures() {
     cout << "Loading textures..." << endl;
     QList<QFile *> fileList;
 
-    // Alpine
-
-    fileList.append(new QFile("textures/alpine/alpine_west.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_east.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_up.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_down.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
-    fileList.append(new QFile("textures/alpine/alpine_north.bmp"));
-    /*
-    // Lagoon
-    fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_east.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_up.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_down.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_south.bmp"));
-    fileList.append(new QFile("textures/lagoon/lagoon_north.bmp")); */
-    /*
-    // Hourglass
-    fileList.append(new QFile("textures/hourglass/hourglass_west.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_east.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_up.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_down.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_south.bmp"));
-    fileList.append(new QFile("textures/hourglass/hourglass_north.bmp")); */
-    // Island
-    /*
-    fileList.append(new QFile("textures/islands/islands_west.bmp"));
-    fileList.append(new QFile("textures/islands/islands_east.bmp"));
-    fileList.append(new QFile("textures/islands/islands_up.bmp"));
-    fileList.append(new QFile("textures/islands/islands_down.bmp"));
-    fileList.append(new QFile("textures/islands/islands_south.bmp"));
-    fileList.append(new QFile("textures/islands/islands_north.bmp"));*/
+    switch (SKYBOX) {
+    case SKYBOX_ALPINE:
+        fileList.append(new QFile("textures/alpine/alpine_west.bmp"));
+        fileList.append(new QFile("textures/alpine/alpine_east.bmp"));
+        fileList.append(new QFile("textures/alpine/alpine_up.bmp"));
+        fileList.append(new QFile("textures/alpine/alpine_down.bmp"));
+        fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
+        fileList.append(new QFile("textures/alpine/alpine_north.bmp"));
+        break;
+    case SKYBOX_LAGOON:
+        fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
+        fileList.append(new QFile("textures/lagoon/lagoon_east.bmp"));
+        fileList.append(new QFile("textures/lagoon/lagoon_up.bmp"));
+        fileList.append(new QFile("textures/lagoon/lagoon_down.bmp"));
+        fileList.append(new QFile("textures/lagoon/lagoon_south.bmp"));
+        fileList.append(new QFile("textures/lagoon/lagoon_north.bmp"));
+        break;
+    case SKYBOX_HOURGLASS:
+        fileList.append(new QFile("textures/hourglass/hourglass_west.bmp"));
+        fileList.append(new QFile("textures/hourglass/hourglass_east.bmp"));
+        fileList.append(new QFile("textures/hourglass/hourglass_up.bmp"));
+        fileList.append(new QFile("textures/hourglass/hourglass_down.bmp"));
+        fileList.append(new QFile("textures/hourglass/hourglass_south.bmp"));
+        fileList.append(new QFile("textures/hourglass/hourglass_north.bmp"));
+        break;
+    case SKYBOX_ISLAND:
+    default:
+        fileList.append(new QFile("textures/islands/islands_west.bmp"));
+        fileList.append(new QFile("textures/islands/islands_east.bmp"));
+        fileList.append(new QFile("textures/islands/islands_up.bmp"));
+        fileList.append(new QFile("textures/islands/islands_down.bmp"));
+        fileList.append(new QFile("textures/islands/islands_south.bmp"));
+        fileList.append(new QFile("textures/islands/islands_north.bmp"));
+    }
 
     GLuint terrainTextures[4];
     terrainTextures[0] = load_texture(TERRAIN_TEX0);
@@ -309,7 +305,7 @@ void DrawEngine::load_textures() {
 
     terrain_->setTextures(terrainTextures);
 
-    GLuint tempInt = load_texture(QString("../water01_bumpmap.jpg"));
+    GLuint tempInt = load_texture(QString("textures/water01_bumpmap.jpg"));
     terrain_->bumpmap = tempInt;
 }
 
@@ -388,20 +384,6 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 }
 
 
-void draw_quad() {
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2d(-1, -1);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2d(1, -1);
-    glTexCoord2f( 1.0f, 1.0f);
-    glVertex2d(1, 1);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2d(-1, 1);
-    glEnd();
-}
-
-
 /**
   @paragraph Should render one frame at the given elapsed time in the program.
   Assumes that the GL context is valid when this method is called.
@@ -415,13 +397,21 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     //Render the scene to framebuffer 0, tracking how much we need to blur later
     framebuffer_objects_["fbo_0"]->bind();
     perspective_camera(w, h);
+    // Ensure that GL_TEXTURE0 is active before rendering the scene!
     glActiveTexture(GL_TEXTURE0);
     render_scene(time, w, h);
     framebuffer_objects_["fbo_0"]->release();
 
     orthogonal_camera(w, h);
 
-    if (dofEnabled) {
+    if (depthmapEnabled_) {
+        // If depth map enabled, just render the alpha (blend) values
+        shader_programs_["depthmap"]->bind();
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
+        textured_quad(w, h, true);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        shader_programs_["depthmap"]->release();
+    } else if (dofEnabled_) {
         // Second Pass: Downsampling
         //framebuffer_objects_["fbo_1"]->bind();
         //shader_programs_["downsample"]->bind();
@@ -495,7 +485,6 @@ void DrawEngine::draw_frame(float time,int w,int h) {
 
     // Make sure texture0 is active for text rendering afterwards
     glActiveTexture(GL_TEXTURE0);
-    //glEnable(GL_TEXTURE_2D);
 }
 
 
@@ -528,21 +517,12 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
     shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
     glPushMatrix();
-    glTranslatef(0, -15.f, 0.f);
+    glTranslatef(0, -28.f, 0.f);
     glRotatef(270, 1, 0, 0);
-    glScalef(2.5, 2.5, 2.5);
+    glScalef(3.5, 3.5, 3.5);
     terrain_->render();
     glPopMatrix();
     shader_programs_["terrain"]->release();
-
-    /*
-    shader_programs_["refract"]->bind();
-    shader_programs_["refract"]->setUniformValue("CubeMap", GL_TEXTURE0);
-    shader_programs_["refract"]->release();
-
-    shader_programs_["reflect"]->bind();
-    shader_programs_["reflect"]->setUniformValue("CubeMap",GL_TEXTURE0);
-    shader_programs_["reflect"]->release(); */
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -691,19 +671,22 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
 void DrawEngine::key_press_event(QKeyEvent *event) {
     switch(event->key()) {
     case Qt::Key_Up:
-        camera_.focalDistance += 1.0f;
+        camera_.focalDistance += 5.0f;
         break;
     case Qt::Key_Down:
-        camera_.focalDistance -= 1.0f;
+        camera_.focalDistance -= 5.0f;
         break;
     case Qt::Key_Left:
-        camera_.focalRange -= 1.0f;
+        camera_.focalRange -= 5.0f;
         break;
     case Qt::Key_Right:
-        camera_.focalRange += 1.0f;
+        camera_.focalRange += 5.0f;
         break;
     case Qt::Key_D:
-        dofEnabled = !dofEnabled;
+        dofEnabled_ = !dofEnabled_;
+        break;
+    case Qt::Key_M:
+        depthmapEnabled_ = !depthmapEnabled_;
         break;
     }
 }

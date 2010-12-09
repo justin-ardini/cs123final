@@ -72,8 +72,8 @@ private:
     GLfloat mScale;
     bool mIncreasing;
 
-    static const int       TERRAIN_REGIONS_COUNT = 4;
-    static const float     HEIGHTMAP_TILING_FACTOR = 4;
+    static const int TERRAIN_REGIONS_COUNT = 4;
+    static const float HEIGHTMAP_TILING_FACTOR = 4;
 
     //tiling factor must divide 2^depth
     TerrainRegion g_regions[TERRAIN_REGIONS_COUNT];

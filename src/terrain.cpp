@@ -3,6 +3,11 @@ using std::string;
 using std::cout;
 using std::endl;
 
+// Change this to change the water level
+#define SEA_LEVEL 7.3f
+// Change this to change the level at which terrain changes from grass to rock, rock to ice
+#define TERRAIN_HEIGHT 1.8f
+
 Terrain::Terrain() {
     mRoughness = 5;
     mDecay = 3;
@@ -41,7 +46,7 @@ void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
     shader->setUniformValue("region2Max", g_regions[1].max);
     shader->setUniformValue("region3Max", g_regions[2].max);
     shader->setUniformValue("region4Max", g_regions[3].max);
-    shader->setUniformValue("sea_level", 5.4f);
+    shader->setUniformValue("sea_level", SEA_LEVEL);
     shader->setUniformValue("CubeMap", 0);
     shader->setUniformValue("bumpmap", bumpmap);
 
@@ -214,6 +219,9 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
     float minHeight = 0;
     for (int row = 0; row < mSize;row++){
         for (int col = 0; col < mSize; col++){
+            float rowDiff = row - 0.5 * mSize;
+            float colDiff = col - 0.5 * mSize;
+            terrain[coordinateToIndex(float2(row,col))].z += 0.00022 * ((rowDiff * rowDiff) + (colDiff * colDiff));
             float curHeight = terrain[coordinateToIndex(float2(row,col))].z;
             if (curHeight < minHeight){
                 minHeight = curHeight;
@@ -223,16 +231,20 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
             }
         }
     }
-    float rangeIncrement = (maxHeight-minHeight)/4.0;
+    float rangeIncrement = (maxHeight - minHeight) / 4.0;
 
-    g_regions[0] = TerrainRegion(minHeight, minHeight + rangeIncrement, 0, "/course/cs123/pub/lab07/textures/dirt.JPG");
-    g_regions[1] = TerrainRegion(minHeight + rangeIncrement, minHeight + rangeIncrement * 2, 0, "/course/cs123/pub/lab07/textures/grass.JPG");
-    g_regions[2] = TerrainRegion(minHeight + rangeIncrement * 2, minHeight + rangeIncrement * 3, 0, "/course/cs123/pub/lab07/textures/rock.JPG");
-    g_regions[3] = TerrainRegion(minHeight + rangeIncrement * 3, minHeight + rangeIncrement * 4, 0, "/course/cs123/pub/lab07/textures/snow.JPG");
+    g_regions[0] = TerrainRegion(minHeight - TERRAIN_HEIGHT,
+                                 minHeight - TERRAIN_HEIGHT + rangeIncrement, 0, "/course/cs123/pub/lab07/textures/dirt.JPG");
+    g_regions[1] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement,
+                                 minHeight - TERRAIN_HEIGHT + rangeIncrement * 2, 0, "/course/cs123/pub/lab07/textures/grass.JPG");
+    g_regions[2] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 2,
+                                 minHeight - TERRAIN_HEIGHT + rangeIncrement * 3, 0, "/course/cs123/pub/lab07/textures/rock.JPG");
+    g_regions[3] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 3,
+                                 minHeight - TERRAIN_HEIGHT + rangeIncrement * 4, 0, "/course/cs123/pub/lab07/textures/snow.JPG");
 
     for(int location = 0; location < (mSize * mSize); location++){
-        if(terrain[location].z <= 5.4f){
-            terrain[location].z = 5.4f;
+        if(terrain[location].z <= SEA_LEVEL){
+            terrain[location].z = SEA_LEVEL;
         }
     }
 }
@@ -254,7 +266,7 @@ void Terrain::populateNormals() {
     }
 
     for(int location = 0; location < (mSize * mSize); location++){
-        if(terrain[location].z <= 5.4f){
+        if(terrain[location].z <= SEA_LEVEL){
             normalmap[location] = float3(0.0f, 0.0f, 1.0f);
         }
     }
@@ -403,65 +415,6 @@ void Terrain::fillDiamond(float2 ptof, int dist,float2 xy, int depth){
     }
     diamond.z /= num_add;
     diamond.z += getPerturb(mDepth-depth);
-    //cout << diamond.z<<endl;
+
     terrain[coordinateToIndex(ptof)] = diamond;
 }
-
-
-/**
-  Setup OpenGL here.  You should specify your render settings within this method.
-  This method is called once when Qt first retreives the OpenGL context during the
-  creation of this widget.
-  **/
-/* void GLWidget::initializeGL() {
-    mShaderProgram = new QGLShaderProgram(this); //Sets up the shader program (don't modify)
-    // Here is an example of how to load a fragment shader
-    //addShader(QFile("/home/psastras/frag.txt"), QGLShader::Fragment);
-    //linkShader();
-    //bindShader();
-    // Open GL Render Settings
-
-    glEnable(GL_POLYGON_SMOOTH); //Enable smoothing
-
-    glEnable(GL_DEPTH_TEST);
-   // glEnable(GL_COLOR_MATERIAL);
-    //glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE); //set material properties which will be assigned by glColor
-    glCullFace (GL_BACK);
-    glEnable (GL_CULL_FACE);
-
-    glShadeModel(GL_SMOOTH); //Smooth or flat shading model
-    glPolygonMode(GL_FRONT, GL_FILL); //Shaded mode
-    glPolygonMode(GL_BACK, GL_FILL);
-
-
-    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-    glEnable(GL_TEXTURE_2D);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    // Setup Global Lighting
-
-    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f }; //OpenGL defaults to 0.2, 0.2, 0.2, 1.0
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-    // Setup Local Lighting
-
-    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
-    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 0, 10, 5, 1.0f };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-
-    glClearColor(0, 0, 0, 0); //Set the color to clear buffers to
-
-    glEnable(GL_LIGHTING); //Enable lighting
-    mIsLightingEnabled = true;
-    glEnable(GL_LIGHT0);
-
-
-} */

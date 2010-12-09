@@ -26,8 +26,8 @@ struct Camera {
     float focalDistance, focalRange;
 };
 
-#define DEFAULT_DISTANCE 20.0f
-#define DEFAULT_RANGE 40.0f
+#define DEFAULT_DISTANCE 10.0f
+#define DEFAULT_RANGE 100.0f
 
 static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
 static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
@@ -72,15 +72,16 @@ protected:
     void render_terrain();
 
     //member variables
-    QHash<QString, QGLShaderProgram *> shader_programs_; ///hash map of all shader programs
-    QHash<QString, QGLFramebufferObject *> framebuffer_objects_; ///hash map of all framebuffer objects
-    QHash<QString, Model> models_; ///hashmap of all models
-    QHash<QString, GLuint> textures_; ///hashmap of all textures
-    const QGLContext *context_; ///the current OpenGL context to render to
-    float previous_time_, fps_; ///the previous time and the fps counter
-    Camera camera_; ///a simple camera struct
+    QHash<QString, QGLShaderProgram *> shader_programs_; // hash map of all shader programs
+    QHash<QString, QGLFramebufferObject *> framebuffer_objects_; // hash map of all framebuffer objects
+    QHash<QString, Model> models_; // hashmap of all models
+    QHash<QString, GLuint> textures_; // hashmap of all textures
+    const QGLContext *context_; // the current OpenGL context to render to
+    float previous_time_, fps_; // the previous time and the fps counter
+    Camera camera_; // a simple camera struct
     Terrain *terrain_;
-    bool dofEnabled; // Depth of field?
+    bool dofEnabled_; // Depth of field?
+    bool depthmapEnabled_; // Show depth map?
 };
 
 #endif // DRAWENGINE_H
