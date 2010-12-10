@@ -8,6 +8,8 @@
 #include "glm.h"
 #include "common.h"
 #include "terrain.h"
+#include "camera.h"
+#include <Qt>
 
 class QGLContext;
 class QGLShaderProgram;
@@ -20,14 +22,6 @@ struct Model {
     GLuint idx;
 };
 
-struct Camera {
-    float3 eye, center, up;
-    float fovy, near, far;
-    float focalDistance, focalRange;
-};
-
-#define DEFAULT_DISTANCE 10.0f
-#define DEFAULT_RANGE 100.0f
 
 static const QString TERRAIN_TEX0 = "textures/terrain/dirt.jpg";
 static const QString TERRAIN_TEX1 = "textures/terrain/grass.jpg";
@@ -43,17 +37,14 @@ public:
     ~DrawEngine();
 
     //methods
+    Camera * getCamera() { return &camera_; }
     void draw_frame(float time, int w, int h);
     void resize_frame(int w, int h);
     void mouse_wheel_event(int dx);
-    void mouse_drag_event(float2 p0, float2 p1);
+    void mouse_drag_event(float2 p0, float2 p1, const Qt::MouseButtons &buttons);
     void key_press_event(QKeyEvent *event);
     //getters and setters
     float fps() const { return fps_; }
-    float focalDistance() const { return camera_.focalDistance; }
-    float focalRange() const { return camera_.focalRange; }
-
-    //member variables
 
 protected:
 
@@ -71,6 +62,7 @@ protected:
     void create_fbos(int w, int h);
     void render_water();
     void render_reflections();
+    void render_refraction();
 
     //member variables
     QHash<QString, QGLShaderProgram *> shader_programs_; // hash map of all shader programs
@@ -83,8 +75,7 @@ protected:
     Terrain *terrain_;
     bool dofEnabled_; // Depth of field?
     bool depthmapEnabled_; // Show depth map?
-    float offsetX_;
-    float offsetY_;
+    float offsetX_, offsetY_;
     GLuint bumpMap_;
 };
 

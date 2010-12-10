@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QTime>
 #include <QFileDialog>
+#include <Qt>
 
 GLWidget::GLWidget(QWidget *parent) :
     QGLWidget(QGLFormat(QGL::DoubleBuffer), parent) {
@@ -40,8 +41,9 @@ void GLWidget::paintGL() {
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event) {
     float2 pos(event->x(), event->y());
-    if(event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton)
-        draw_engine_->mouse_drag_event(mouse_pos_prev_, pos);
+    if(event->buttons() & Qt::LeftButton || event->buttons() & Qt::RightButton) {
+        draw_engine_->mouse_drag_event(mouse_pos_prev_, pos, event->buttons());
+    }
     mouse_pos_prev_ = pos;
 }
 
@@ -80,8 +82,8 @@ void GLWidget::render_text() {
 
     }
     this->renderText(10.0, 20.0, "FPS: " + QString::number((int)(prev_fps_)), f);
-    this->renderText(10.0, 30.0, "Focal Distance: " + QString::number((int)(draw_engine_->focalDistance())), f);
-    this->renderText(10.0, 40.0, "Focal Range: " + QString::number((int)(draw_engine_->focalRange())), f);
+    this->renderText(10.0, 30.0, "Focal Distance: " + QString::number((int)(draw_engine_->getCamera()->getFocalDistance())), f);
+    this->renderText(10.0, 40.0, "Focal Range: " + QString::number((int)(draw_engine_->getCamera()->getFocalRange())), f);
     //this->renderText(10.0, 35.0, "Reflections: ON");
 
 }
