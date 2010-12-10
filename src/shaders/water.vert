@@ -21,7 +21,7 @@ const vec4 L = vec4(1.0, 1.0, 1.0, 0.0); //light direction
 
 void main(){
         // normal map tex coord
-        gl_TexCoord[1] = gl_MultiTexCoord1;
+        gl_TexCoord[7] = gl_MultiTexCoord7;
 	
 	//get the norm of the vertex
 	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
