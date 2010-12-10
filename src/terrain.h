@@ -60,6 +60,8 @@ public:
     float2 wrap(float2 val);
     bool isMultiple(int val);
 
+    GLuint getTextureInt(int i);
+
 private:
     //terrain stuff
     float3 * terrain;

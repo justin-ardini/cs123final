@@ -21,6 +21,7 @@ void main(){
         // normal map tex coord
         gl_TexCoord[1] = gl_MultiTexCoord1;
 
+	
 	//get the norm of the vertex
 	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
 
