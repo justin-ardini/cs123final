@@ -16,7 +16,11 @@ SOURCES += main.cpp \
     drawengine.cpp \
     targa.cpp \
     glm.cpp \
-    terrain.cpp
+    terrain.cpp \
+    camera.cpp \
+    CS123Vector.inl \
+    CS123Matrix.inl \
+    CS123Matrix.cpp
 
 HEADERS += mainwindow.h \
     glwidget.h \
@@ -25,7 +29,12 @@ HEADERS += mainwindow.h \
     glm.h \
     common.h \
     terrain.h \
-    glext.h
+    glext.h \
+    camera.h \
+    CS123Vector.h \
+    CS123Matrix.h \
+    CS123Algebra.h \
+    CS123Common.h
 
 FORMS += mainwindow.ui
 INCLUDEPATH += src

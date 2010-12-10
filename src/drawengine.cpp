@@ -97,14 +97,7 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     glClearColor(0.0f,0.0f,0.0f,0.0f);
 
     //init member variables
-    previous_time_ = 0.0f;
-    camera_.center.x = 0.f,camera_.center.y = 0.f,camera_.center.z = 0.f;
-    camera_.eye.x = 0.f,camera_.eye.y = 0.0f,camera_.eye.z = -2.f;
-    camera_.up.x = 0.f,camera_.up.y = 1.f,camera_.up.z = 0.f;
-    camera_.near = 0.1f,camera_.far = 100.f;
-    camera_.fovy = 60.f;
-    camera_.focalDistance = DEFAULT_DISTANCE;
-    camera_.focalRange = DEFAULT_RANGE;
+    previous_time_ = 0.0;
 
     //init resources - so i heard you like colored text?
     cout << "Using OpenGL Version " << glGetString(GL_VERSION) << endl << endl;
@@ -223,14 +216,6 @@ void DrawEngine::load_shaders() {
                                                          "shaders/water.frag");
     shader_programs_["water"]->link();
     cout << "\t  shaders/water " << endl;
-
-    shader_programs_["downsample"] = new QGLShaderProgram(context_);
-    shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                            "shaders/downsample.vert");
-    shader_programs_["downsample"]->addShaderFromSourceFile(QGLShader::Fragment,
-                                                            "shaders/downsample.frag");
-    shader_programs_["downsample"]->link();
-    cout << "\t  shaders/downsample " << endl;
 
     shader_programs_["blur_x"] = new QGLShaderProgram(context_);
     shader_programs_["blur_x"]->addShaderFromSourceFile(QGLShader::Vertex,
@@ -362,7 +347,7 @@ void DrawEngine::create_fbos(int w,int h) {
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_2"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
+    framebuffer_objects_["refraction"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
@@ -403,7 +388,14 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     render_reflections();
     framebuffer_objects_["reflection"]->release();
 
-    // Reflection testing
+    // Render just the scene below sea level to a framebuffer
+    //framebuffer_objects_["refraction"]->bind();
+    //perspective_camera(w, h);
+    //glActiveTexture(GL_TEXTURE0);
+    //render_refraction();
+    //framebuffer_objects_["refraction"]->release();
+
+    // Refraction testing
     if (false) {
         orthogonal_camera(w, h);
         glActiveTexture(GL_TEXTURE0);
@@ -431,34 +423,25 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glBindTexture(GL_TEXTURE_2D, 0);
         shader_programs_["depthmap"]->release();
     } else if (dofEnabled_) {
-        // Second Pass: Downsampling
-        //framebuffer_objects_["fbo_1"]->bind();
-        //shader_programs_["downsample"]->bind();
-        //glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
-        //glViewport(0, 0, w / 2, h / 2);
-        //textured_quad(w, h, true);
-        //shader_programs_["downsample"]->release();
-        //framebuffer_objects_["fbo_1"]->release();
-
         glViewport(0, 0, w, h);
         // Third pass: Gaussian filtering along the X axis
-        framebuffer_objects_["fbo_2"]->bind();
+        framebuffer_objects_["fbo_1"]->bind();
         shader_programs_["blur_x"]->bind();
         shader_programs_["blur_x"]->setUniformValue("Width", w * 3.0f);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_x"]->release();
-        framebuffer_objects_["fbo_2"]->release();
+        framebuffer_objects_["fbo_1"]->release();
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // Fourth pass: Gaussian filtering along the Y axis
-        framebuffer_objects_["fbo_3"]->bind();
+        framebuffer_objects_["fbo_2"]->bind();
         shader_programs_["blur_y"]->bind();
         shader_programs_["blur_y"]->setUniformValue("Height", h * 3.0f);
-        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_1"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_y"]->release();
-        framebuffer_objects_["fbo_3"]->release();
+        framebuffer_objects_["fbo_2"]->release();
         glBindTexture(GL_TEXTURE_2D, 0);
 
         // Fifth pass: final compositing
@@ -469,7 +452,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_3"]->texture());
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
 
         //glViewport(0, 0, w, h);
 
@@ -533,8 +516,8 @@ void DrawEngine::render_reflections() {
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
     shader_programs_["terrain"]->setUniformValue("seaLevel", SEA_LEVEL);
     shader_programs_["terrain"]->setUniformValue("isReflection", 1.0f);
-    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
-    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
+    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.getFocalDistance());
+    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.getFocalRange());
 
     glPushMatrix();
     glTranslatef(0.0f, -28.0f, 0.0f);
@@ -578,8 +561,8 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["terrain"]->bind();
     glActiveTexture(GL_TEXTURE0);
     terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
-    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
-    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
+    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.getFocalDistance());
+    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.getFocalRange());
     shader_programs_["terrain"]->setUniformValue("isReflection", 0.0f);
 
     glTranslatef(0, -28.f, 0.f);
@@ -592,8 +575,8 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["water"]->bind();
     shader_programs_["water"]->setUniformValue("reflection", 0);
     shader_programs_["water"]->setUniformValue("bumpMap", 1);
-    shader_programs_["water"]->setUniformValue("focalDistance", camera_.focalDistance);
-    shader_programs_["water"]->setUniformValue("focalRange", camera_.focalRange);
+    shader_programs_["water"]->setUniformValue("focalDistance", camera_.getFocalDistance());
+    shader_programs_["water"]->setUniformValue("focalRange", camera_.getFocalRange());
     // These casts to float are necessary, c'mon GLSL
     shader_programs_["water"]->setUniformValue("screenWidth", (float) w);
     shader_programs_["water"]->setUniformValue("screenHeight", (float) h);
@@ -696,16 +679,19 @@ void DrawEngine::textured_quad(int w,int h,bool flip) {
   @param h: the viewport height
 
 **/
-void DrawEngine::perspective_camera(int w,int h) {
+void DrawEngine::perspective_camera(int w, int h) {
     float ratio = w / static_cast<float>(h);
+
+    // set up projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(camera_.fovy,ratio,camera_.near,camera_.far);
-    gluLookAt(camera_.eye.x,camera_.eye.y,camera_.eye.z,
-              camera_.center.x,camera_.center.y,camera_.center.z,
-              camera_.up.x,camera_.up.y,camera_.up.z);
+    gluPerspective(camera_.m_fovy, ratio, camera_.m_near, camera_.m_far);
+
+    // set up modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    camera_.multMatrix();
+
 }
 
 /**
@@ -745,14 +731,8 @@ void DrawEngine::resize_frame(int w,int h) {
   @param p0: the old mouse position
   @param p1: the new mouse position
 **/
-void DrawEngine::mouse_drag_event(float2 p0,float2 p1) {
-    int dx = p1.x - p0.x,dy = p1.y - p0.y;
-    QQuaternion qq = QQuaternion::fromAxisAndAngle(0, 1, 0, -dx / 5.0);
-    QVector3D qv3 = qq.rotatedVector(QVector3D(camera_.eye.x, camera_.eye.y,
-                                               camera_.eye.z));
-    qq = QQuaternion::fromAxisAndAngle(qq.rotatedVector(QVector3D(1, 0, 0)), dy / 5.0);
-    qv3 = qq.rotatedVector(qv3);
-    camera_.eye.x = qv3.x(), camera_.eye.y = qv3.y(), camera_.eye.z = qv3.z();
+void DrawEngine::mouse_drag_event(float2 p0, float2 p1, const Qt::MouseButtons &buttons) {
+    camera_.mouseMove(Vector2(p1.x - p0.x, p1.y - p0.y), buttons);
 }
 
 /**
@@ -762,8 +742,7 @@ void DrawEngine::mouse_drag_event(float2 p0,float2 p1) {
   @param dx: The delta value of the mouse wheel movement.
 **/
 void DrawEngine::mouse_wheel_event(int dx) {
-    if((camera_.center - camera_.eye).getMagnitude() > .5 || dx < 0)
-        camera_.eye += (camera_.center - camera_.eye).getNormalized() * dx * .005;
+    camera_.mouseWheel(dx);
 }
 
 /**
@@ -782,7 +761,7 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
         image.load(files[i]->fileName());
         image = image.mirrored(false,true);
         texture = QGLWidget::convertToGLFormat(image);
-        texture = texture.scaledToWidth(1024,Qt::SmoothTransformation);
+        texture = texture.scaledToWidth(2048,Qt::SmoothTransformation);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,3,3,texture.width(),texture.height(),0,GL_RGBA,GL_UNSIGNED_BYTE,texture.bits());
         gluBuild2DMipmaps(GL_TEXTURE_CUBE_MAP_POSITIVE_X +i, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
         cout << "\t  " << files[i]->fileName().toStdString() << " " << endl;
@@ -802,16 +781,16 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
 void DrawEngine::key_press_event(QKeyEvent *event) {
     switch(event->key()) {
     case Qt::Key_Up:
-        camera_.focalDistance += 5.0f;
+        camera_.m_focalDistance += 5.0f;
         break;
     case Qt::Key_Down:
-        camera_.focalDistance -= 5.0f;
+        camera_.m_focalDistance -= 5.0f;
         break;
     case Qt::Key_Left:
-        camera_.focalRange -= 5.0f;
+        camera_.m_focalRange -= 5.0f;
         break;
     case Qt::Key_Right:
-        camera_.focalRange += 5.0f;
+        camera_.m_focalRange += 5.0f;
         break;
     case Qt::Key_D:
         dofEnabled_ = !dofEnabled_;
