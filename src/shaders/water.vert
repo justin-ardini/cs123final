@@ -5,6 +5,7 @@ uniform sampler2D refraction;
 uniform float offsetX;
 uniform float offsetY;
 
+
 //varying variables
 varying float intensity;
 varying float height;
