@@ -78,6 +78,8 @@ void main(){
 
     //mix the reflection with the blue of the water
     //gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
-    //gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity2;
-    //gl_FragColor.a = R.a;
+    gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity2;
+    gl_FragColor.a = R.a;
+
+    gl_FragColor = texture2D(bumpMap, gl_TexCoord[1].st);
 }
