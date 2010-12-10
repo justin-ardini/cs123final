@@ -16,9 +16,6 @@ Terrain::Terrain() {
     int terrain_size = mSize * mSize;
     terrain = new float3[terrain_size];
     normalmap = new float3[terrain_size];
-
-    offsetX = 0.0f;
-    offsetY = 0.0f;
 }
 
 

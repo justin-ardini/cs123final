@@ -1,12 +1,12 @@
 varying vec2 Tap[4], TapNeg[3];
-uniform int Width;
+uniform float Width;
 
 void main(void)
 {
 	vec2 horzTapOffs[7];
 	vec2 TexCoord = gl_MultiTexCoord0.st;
 
-	float dx = 1.0/float(Width);
+        float dx = 1.0 / Width;
 	horzTapOffs[0] = vec2(0.0, 0.0);
 	horzTapOffs[1] = vec2(1.3366 * dx, 0.0);
 	horzTapOffs[2] = vec2(3.4295 * dx, 0.0);

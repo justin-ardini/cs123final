@@ -60,7 +60,6 @@ public:
     float2 wrap(float2 val);
     bool isMultiple(int val);
 
-    GLuint bumpmap;
 private:
     //terrain stuff
     float3 * terrain;
@@ -75,11 +74,7 @@ private:
     static const int TERRAIN_REGIONS_COUNT = 4;
     static const float HEIGHTMAP_TILING_FACTOR = 4;
 
-    //tiling factor must divide 2^depth
     TerrainRegion g_regions[TERRAIN_REGIONS_COUNT];
-
-    float offsetX;
-    float offsetY;
 };
 
 #endif // TERRAIN_H

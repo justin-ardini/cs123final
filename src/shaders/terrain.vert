@@ -14,6 +14,9 @@ uniform float region2Min;
 uniform float region3Min;
 uniform float region4Min;
 
+uniform float seaLevel;
+uniform float isReflection;
+
 //varying variables
 varying float intensity;
 varying float height;
@@ -28,17 +31,24 @@ varying vec3 N; //surface normal
 const vec4 L = vec4(1.0, 1.0, 1.0, 0.0); //light direction
 
 void main(){
-	//get the tex coord
+        // get the tex coord
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	
-	//get the norm of the vertex
+        // get the norm of the vertex
 	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
-	
-	V = gl_ModelViewMatrix * gl_Vertex;
+        vec4 vertCopy = gl_Vertex;
+
+        // if a reflection, don't render below the sea level height
+        // this clips the reflection for us
+        if (isReflection == 1.0) {
+            vertCopy.z = max(gl_Vertex.z, seaLevel);
+        }
+
+        V = gl_ModelViewMatrix * vertCopy;
 	E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
 	N = normalize(vertexNorm);
 	
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+        gl_Position = gl_ModelViewProjectionMatrix * vertCopy;
 	
 	blur = clamp(abs(-gl_Position.z - focalDistance) / focalRange, 0.0, 1.0);
 	

@@ -1,8 +1,5 @@
 //uniform variables
-uniform samplerCube CubeMap;
-
-uniform float sea_level;
-uniform sampler2D bumpmap;
+uniform sampler2D reflection;
 
 uniform float offsetX;
 uniform float offsetY;
@@ -21,17 +18,17 @@ varying vec3 N; //surface normal
 const vec4 L = vec4(1.0, 1.0, 1.0, 0.0); //light direction
 
 void main(){
-	//get the tex coord
-	gl_TexCoord[0] = gl_MultiTexCoord0;
-	
+        // normal map tex coord
+        gl_TexCoord[1] = gl_MultiTexCoord1;
+
 	//get the norm of the vertex
 	vec3 vertexNorm = gl_NormalMatrix * gl_Normal;
-	
+
 	V = gl_ModelViewMatrix * gl_Vertex;
 	E = gl_ProjectionMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);
 	N = normalize(vertexNorm);
-	
-	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+
+        gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 	
 	blur = clamp(abs(-gl_Position.z - focalDistance) / focalRange, 0.0, 1.0);
 	
