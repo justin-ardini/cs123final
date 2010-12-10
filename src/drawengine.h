@@ -71,6 +71,7 @@ protected:
     void create_fbos(int w, int h);
     void render_water(bool flip);
     void render_reflections();
+    void reflection_test(int w, int h);
 
     //member variables
     QHash<QString, QGLShaderProgram *> shader_programs_; // hash map of all shader programs

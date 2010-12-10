@@ -28,8 +28,7 @@ using std::endl;
 enum SKYBOX_TYPE {
     SKYBOX_ALPINE,
     SKYBOX_ISLAND,
-    SKYBOX_HOURGLASS,
-    SKYBOX_LAGOON
+    SKYBOX_HOURGLASS
 };
 
 // Change this define to change the skybox texture
@@ -283,14 +282,6 @@ void DrawEngine::load_textures() {
         fileList.append(new QFile("textures/alpine/alpine_south.bmp"));
         fileList.append(new QFile("textures/alpine/alpine_north.bmp"));
         break;
-    case SKYBOX_LAGOON:
-        fileList.append(new QFile("textures/lagoon/lagoon_west.bmp"));
-        fileList.append(new QFile("textures/lagoon/lagoon_east.bmp"));
-        fileList.append(new QFile("textures/lagoon/lagoon_up.bmp"));
-        fileList.append(new QFile("textures/lagoon/lagoon_down.bmp"));
-        fileList.append(new QFile("textures/lagoon/lagoon_south.bmp"));
-        fileList.append(new QFile("textures/lagoon/lagoon_north.bmp"));
-        break;
     case SKYBOX_HOURGLASS:
         fileList.append(new QFile("textures/hourglass/hourglass_west.bmp"));
         fileList.append(new QFile("textures/hourglass/hourglass_east.bmp"));
@@ -362,7 +353,6 @@ GLuint DrawEngine::load_texture(const QFile &file) {
   @param h:    the viewport height
 **/
 void DrawEngine::create_fbos(int w,int h) {
-
     //Allocate the main framebuffer object for rendering the scene to
     //This needs a depth attachment.
     framebuffer_objects_["fbo_0"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
@@ -376,10 +366,8 @@ void DrawEngine::create_fbos(int w,int h) {
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    // Do reflections need a depth buffer?
-    framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
+    framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    //framebuffer_objects_["reflection"]->format().setSamples(16);
 }
 
 /**
@@ -409,10 +397,16 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 **/
 void DrawEngine::draw_frame(float time,int w,int h) {
     fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
+
+    if (true) {
+        perspective_camera(w, h);
+        reflection_test(w, h);
+        return;
+    }
+
     // Render just the reflected scene about sea level to a framebuffer
     framebuffer_objects_["reflection"]->bind();
     perspective_camera(w, h);
-    glViewport(0, 0, w, h);
     //glLoadIdentity();
     glActiveTexture(GL_TEXTURE0);
     render_reflections();
@@ -423,7 +417,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         orthogonal_camera(w, h);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
-        textured_quad(w, h, true);
+        textured_quad(w, h, false);
         glBindTexture(GL_TEXTURE_2D, 0);
         return;
     }
@@ -519,14 +513,67 @@ void DrawEngine::draw_frame(float time,int w,int h) {
 }
 
 
+void DrawEngine::reflection_test(int w, int h) {
+    glViewport(0, 0, w, h);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    perspective_camera(w, h);
+    glActiveTexture(GL_TEXTURE0);
+    framebuffer_objects_["reflection"]->bind();
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_NORMALIZE);
+        glCullFace(GL_FRONT);
+
+
+        glPushMatrix();
+            glScalef(1.0, -1.0, 1.0);
+            double plane[4] = {0.0, 1.0, 0.0, 0.0}; //water at y=0
+            glEnable(GL_CLIP_PLANE0);
+            glClipPlane(GL_CLIP_PLANE0, plane);
+
+            //glPushMatrix();
+            //glTranslatef(0, 5, 0);
+            gluSphere(gluNewQuadric(), 4, 20, 20);
+            //glPopMatrix();
+
+            glDisable(GL_CLIP_PLANE0);
+        glPopMatrix();
+
+        glDisable(GL_NORMALIZE);
+
+    framebuffer_objects_["reflection"]->release();
+
+    perspective_camera(w, h);
+    glCullFace(GL_BACK);
+    gluSphere(gluNewQuadric(), 4, 20, 20);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
+    glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 1.0f);
+        glNormal3f(0, 1, 0);
+        glVertex3f(-10, 0, -10);
+
+        glTexCoord2f(0.0f, 0.0f);
+        glNormal3f(0, 1, 0);
+        glVertex3f(10, 0, -10);
+
+        glTexCoord2f(1.0f, 0.0f);
+        glNormal3f(0, 1, 0);
+        glVertex3f(10, 0, 10);
+
+        glTexCoord2f(1.0f, 1.0f);
+        glNormal3f(0, 1, 0);
+        glVertex3f(-10, 0, 10);
+    glEnd();
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+}
+
+
 /**
     Renders the reflections of the scene about the water level
 **/
 void DrawEngine::render_reflections() {
-    glEnable(GL_DEPTH_TEST);
-    glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_TEXTURE_CUBE_MAP);
-    glBindTexture(GL_TEXTURE_CUBE_MAP,textures_["cube_map_1"]);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures_["cube_map_1"]);
     glCallList(models_["skybox"].idx);
 
     glEnable(GL_CULL_FACE);
@@ -541,24 +588,23 @@ void DrawEngine::render_reflections() {
     shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.focalDistance);
     shader_programs_["terrain"]->setUniformValue("focalRange", camera_.focalRange);
 
-    // Reflect the scene about the z = SEA_LEVEL plane
     glTranslatef(0.0f, -28.0f, 0.0f);
     glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
     glScalef(3.5f, 3.5f, 3.5f);
+    // Reflect the scene about the z = SEA_LEVEL plane
     glTranslatef(0, 0, SEA_LEVEL);
     glScalef(1.0f, 1.0f, -1.0f);
     glTranslatef(0, 0, -SEA_LEVEL);
-    //double plane[4] = {0.0, 0.0, SEA_LEVEL, 0.0}; //water at z = SEA_LEVEL
-    //glEnable(GL_CLIP_PLANE0);
-    //glClipPlane(GL_CLIP_PLANE0, plane);
+    double plane[4] = {0.0, 0.0, SEA_LEVEL, 0.0}; //water at z = SEA_LEVEL
+    glEnable(GL_CLIP_PLANE0);
+    glClipPlane(GL_CLIP_PLANE0, plane);
     terrain_->render();
-    //glDisable(GL_CLIP_PLANE0);
+    glDisable(GL_CLIP_PLANE0);
     shader_programs_["terrain"]->release();
 
     glPopMatrix();
 
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glDisable(GL_TEXTURE_CUBE_MAP);
 }
@@ -598,18 +644,20 @@ void DrawEngine::render_scene(float time,int w,int h) {
     shader_programs_["terrain"]->release();
 
     // Then render the water with the water shader
-    shader_programs_["water"]->bind();
-    shader_programs_["water"]->setUniformValue("bumpMap", 0);
-    shader_programs_["water"]->setUniformValue("cubeMap", 0);
-    shader_programs_["water"]->setUniformValue("bumpMap", 0);
-    shader_programs_["water"]->setUniformValue("offsetX", offsetX_);
-    shader_programs_["water"]->setUniformValue("offsetY", offsetY_);
+    //shader_programs_["water"]->bind();
+    //shader_programs_["water"]->setUniformValue("bumpMap", 0);
+    //shader_programs_["water"]->setUniformValue("cubeMap", 0);
+    //shader_programs_["water"]->setUniformValue("bumpMap", 0);
+    //shader_programs_["water"]->setUniformValue("offsetX", offsetX_);
+    //shader_programs_["water"]->setUniformValue("offsetY", offsetY_);
 
     glActiveTexture(GL_TEXTURE0);
     //glBindTexture(GL_TEXTURE_2D, terrain_->bumpmap);
     glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
     render_water(false);
-    shader_programs_["water"]->release();
+    //shader_programs_["water"]->release();
 
     glPopMatrix();
 
