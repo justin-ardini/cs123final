@@ -27,6 +27,7 @@ void main(){
         tempVec2.y -= 1.0;
     }
     vec4 tempVec = texture2D(bumpMap, tempVec2);
+    tempVec.w = 0.0;
     
 
     //normalize the normal
@@ -40,19 +41,24 @@ void main(){
     float intensity2 = dot(Nn, normalizedLight.xyz);
     
     float angle = 1.0 - max(0.0, dot(Nn, -I));
+    vec3 d = V.xyz - E.xyz;
+    float dist = (d.x * d.x) + (d.y * d.y) + (d.z * d.z);
     if(angle < 0.3){
-        vec3 d = V.xyz - E.xyz;
-        if((d.x * d.x) + (d.y * d.y) + (d.z * d.z) > 1.0){
-            angle = angle * angle;
+        if(dist > 1.0){
+            angle = angle * angle * angle * angle;
         }
+        angle = angle * angle;
+    }
+    if(dist > 5.0){
         angle = angle * angle;
     }
     
     //get the normal in camera space
     vec4 camNorm = angle * 10.0 * (gl_ModelViewProjectionMatrix * tempVec);
+    //vec4 camNorm = 10.0 * (gl_ModelViewProjectionMatrix * tempVec);
 
     vec2 reflectLocation = ((gl_FragCoord.xy - vec2(camNorm.x, 0.0)) / vec2(screenWidth, screenHeight));
-    //vec2 reflectLocation = (gl_FragCoord.xy) / vec2(screenWidth, screenHeight);
+    //vec2 reflectLocation = ((gl_FragCoord.xy) / vec2(screenWidth, screenHeight));
     reflectLocation.x = max(0.0, min(1.0, reflectLocation.x));
     
     // get the reflected vector around the surface normal

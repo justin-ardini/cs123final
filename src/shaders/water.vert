@@ -4,6 +4,7 @@ uniform sampler2D reflection;
 uniform float offsetX;
 uniform float offsetY;
 
+
 //varying variables
 varying float intensity;
 varying float height;
