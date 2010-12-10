@@ -400,3 +400,10 @@ void Terrain::fillDiamond(float2 ptof, int dist,float2 xy, int depth){
 
     terrain[coordinateToIndex(ptof)] = diamond;
 }
+
+GLuint Terrain::getTextureInt(int i){
+    if(i < 0 || i > 3){
+        return g_regions[0].texture;
+    }
+    return g_regions[i].texture;
+}
