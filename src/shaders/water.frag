@@ -39,9 +39,16 @@ void main(){
     vec4 normalizedLight = normalize(gl_ModelViewMatrix * L);
     float intensity2 = dot(Nn, normalizedLight.xyz);
     
+    //get the normal in camera space
+    vec4 camNorm = 5.0 * (gl_ModelViewProjectionMatrix * tempVec);
+    vec2 reflectLocation = ((gl_FragCoord.xy - vec2(camNorm.x, camNorm.z)) / vec2(screenWidth, screenHeight));
+    reflectLocation.x = max(0.0, min(1.0, reflectLocation.x));
+    reflectLocation.y = max(0.0, min(1.0, reflectLocation.y));
+    
     // get the reflected vector around the surface normal
     // vec3 R = reflect(I, Nn);
-    vec4 R = texture2D(reflection, gl_FragCoord.xy / vec2(screenWidth, screenHeight));
+    //vec4 R = texture2D(reflection, gl_FragCoord.xy / vec2(screenWidth, screenHeight));
+    vec4 R = texture2D(reflection, reflectLocation);
     
     //get the refracted vector
     vec3 R2 = refract(I, Nn, 0.9);
