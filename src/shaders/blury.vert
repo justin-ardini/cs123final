@@ -1,12 +1,12 @@
 varying vec2 Tap[4], TapNeg[3];
-uniform int Height;
+uniform float Height;
 
 void main(void)
 {
 	vec2 vertTapOffs[7];
 	vec2 TexCoord = gl_MultiTexCoord0.st;
 
-	float dy = 1.0/float(Height);
+        float dy = 1.0 / Height;
 	vertTapOffs[0] = vec2(0.0, 0.0);
 	vertTapOffs[1] = vec2(0.0, 1.3366 * dy);
 	vertTapOffs[2] = vec2(0.0, 3.4295 * dy);
