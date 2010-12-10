@@ -661,10 +661,6 @@ void DrawEngine::render_water() {
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
-<<<<<<< HEAD:src/drawengine.cpp
-
-=======
->>>>>>> 76e8c7e49811f88ee98c1ffe62c79012a4608bd6:src/drawengine.cpp
 }
 
 /**
