@@ -315,6 +315,7 @@ GLuint DrawEngine::load_texture(const QFile &file) {
     texture = QGLWidget::convertToGLFormat(image);
 
     glGenTextures(1, &toReturn);
+    std::cout << toReturn << endl;
     glActiveTexture(GL_TEXTURE0 + toReturn);
     glBindTexture(GL_TEXTURE_2D, toReturn);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
@@ -347,9 +348,9 @@ void DrawEngine::create_fbos(int w,int h) {
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_2"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    framebuffer_objects_["refraction"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
-                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
+                                                             GL_TEXTURE_2D,GL_RGBA16F_ARB);
+    framebuffer_objects_["refraction"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
 }
 
@@ -399,8 +400,8 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     if (false) {
         orthogonal_camera(w, h);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
-        textured_quad(w, h, false);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["refraction"]->texture());
+        textured_quad(w, h, true);
         glBindTexture(GL_TEXTURE_2D, 0);
         return;
     }
@@ -547,7 +548,7 @@ void DrawEngine::render_refraction() {
     glCallList(models_["skybox"].idx);
 
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    glCullFace(GL_BACK);
 
     // First, render the terrain with the terrain shader
     shader_programs_["terrain"]->bind();
@@ -557,11 +558,13 @@ void DrawEngine::render_refraction() {
     shader_programs_["terrain"]->setUniformValue("isReflection", 2.0f);
     shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.getFocalDistance());
     shader_programs_["terrain"]->setUniformValue("focalRange", camera_.getFocalRange());
-
+    glPushMatrix();
+    glTranslatef(0, -28.f, 0.f);
+    glRotatef(270, 1, 0, 0);
+    glScalef(3.5, 3.5, 3.5);
     terrain_->render();
-    shader_programs_["terrain"]->release();
-
     glPopMatrix();
+    shader_programs_["terrain"]->release();
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -583,7 +586,7 @@ void DrawEngine::render_scene(float time,int w,int h) {
     glClear(GL_DEPTH_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_CUBE_MAP);
-    glBindTexture(GL_TEXTURE_CUBE_MAP,textures_["cube_map_1"]);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures_["cube_map_1"]);
     glCallList(models_["skybox"].idx);
 
     glEnable(GL_CULL_FACE);
@@ -608,7 +611,8 @@ void DrawEngine::render_scene(float time,int w,int h) {
     // Then render the water with the water shader
     shader_programs_["water"]->bind();
     shader_programs_["water"]->setUniformValue("reflection", 0);
-    shader_programs_["water"]->setUniformValue("bumpMap", 1);
+    shader_programs_["water"]->setUniformValue("bumpMap", 7);
+    shader_programs_["water"]->setUniformValue("refraction", 8);
     shader_programs_["water"]->setUniformValue("focalDistance", camera_.getFocalDistance());
     shader_programs_["water"]->setUniformValue("focalRange", camera_.getFocalRange());
     // These casts to float are necessary, c'mon GLSL
@@ -648,33 +652,44 @@ void DrawEngine::render_water() {
     glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
 
     // Bind the bump map to id 1
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE7);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, bumpMap_);
+
+    // Bind the refraction to id 2
+    glActiveTexture(GL_TEXTURE8);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["refraction"]->texture());
 
     // Draw the water quad
     glBegin(GL_QUADS);
         glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 0.0f);
-        glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE7, 0.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE8, 0.0f, 0.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(-WATER_QUAD_SIZE, -WATER_QUAD_SIZE, SEA_LEVEL);
 
         glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 0.0f);
-        glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE7, 1.0f, 0.0f);
+        glMultiTexCoord2f(GL_TEXTURE8, 1.0f, 0.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(WATER_QUAD_SIZE, -WATER_QUAD_SIZE, SEA_LEVEL);
 
         glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 1.0f);
-        glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 1.0f);
+        glMultiTexCoord2f(GL_TEXTURE7, 1.0f, 1.0f);
+        glMultiTexCoord2f(GL_TEXTURE8, 1.0f, 1.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
 
         glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 1.0f);
-        glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 1.0f);
+        glMultiTexCoord2f(GL_TEXTURE7, 0.0f, 1.0f);
+        glMultiTexCoord2f(GL_TEXTURE8, 0.0f, 1.0f);
         glNormal3f(0, 0, 1);
         glVertex3f(-WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
     glEnd();
 
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);

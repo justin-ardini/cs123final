@@ -42,6 +42,9 @@ void main(){
         // this clips the reflection for us
         if (isReflection == 1.0) {
             vertCopy.z = max(gl_Vertex.z, seaLevel);
+        } else if (isReflection == 2.0) {
+            // if refraction, don't render about sea level
+            vertCopy.z = min(gl_Vertex.z, seaLevel);
         }
 
         V = gl_ModelViewMatrix * vertCopy;
