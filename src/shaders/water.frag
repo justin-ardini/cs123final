@@ -1,5 +1,6 @@
 //uniform variables
 uniform sampler2D reflection;
+uniform sampler2D refraction;
 uniform sampler2D bumpMap;
 
 uniform float offsetX;
@@ -62,7 +63,6 @@ void main(){
     reflectLocation.x = max(0.0, min(1.0, reflectLocation.x));
     
     // get the reflected vector around the surface normal
-    // vec3 R = reflect(I, Nn);
     //vec4 R = texture2D(reflection, gl_FragCoord.xy / vec2(screenWidth, screenHeight));
     vec4 R = texture2D(reflection, reflectLocation);
     
@@ -73,11 +73,11 @@ void main(){
     //vec4 env_color = textureCube(cubeMap, R2);
 
     // TESTING
-    gl_FragColor = mix(R, tempVec, 0.8) * intensity;
-    //gl_FragColor = texture2D(bumpMap, gl_TexCoord[1].st);
+    gl_FragColor = mix(texture2D(refraction, gl_FragCoord.xy / vec2(screenWidth, screenHeight)),
+                    vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
 
     //mix the reflection with the blue of the water
     //gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
-    gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity2;
-    gl_FragColor.a = R.a;
+    //gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity2;
+    //gl_FragColor.a = R.a;
 }
