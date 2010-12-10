@@ -389,11 +389,11 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     framebuffer_objects_["reflection"]->release();
 
     // Render just the scene below sea level to a framebuffer
-    //framebuffer_objects_["refraction"]->bind();
-    //perspective_camera(w, h);
-    //glActiveTexture(GL_TEXTURE0);
-    //render_refraction();
-    //framebuffer_objects_["refraction"]->release();
+    framebuffer_objects_["refraction"]->bind();
+    perspective_camera(w, h);
+    glActiveTexture(GL_TEXTURE0);
+    render_refraction();
+    framebuffer_objects_["refraction"]->release();
 
     // Refraction testing
     if (false) {
@@ -525,6 +525,40 @@ void DrawEngine::render_reflections() {
     glScalef(3.5f, 3.5f, 3.5f);
     terrain_->render();
     glPopMatrix();
+    shader_programs_["terrain"]->release();
+
+    glPopMatrix();
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glDisable(GL_TEXTURE_CUBE_MAP);
+}
+
+/**
+  Render the refraction to a framebuffer
+  **/
+void DrawEngine::render_refraction() {
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_TEXTURE_CUBE_MAP);
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textures_["cube_map_1"]);
+    glCallList(models_["skybox"].idx);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+
+    // First, render the terrain with the terrain shader
+    shader_programs_["terrain"]->bind();
+    glActiveTexture(GL_TEXTURE0);
+    terrain_->updateTerrainShaderParameters(shader_programs_["terrain"]);
+    shader_programs_["terrain"]->setUniformValue("seaLevel", SEA_LEVEL);
+    shader_programs_["terrain"]->setUniformValue("isReflection", 2.0f);
+    shader_programs_["terrain"]->setUniformValue("focalDistance", camera_.getFocalDistance());
+    shader_programs_["terrain"]->setUniformValue("focalRange", camera_.getFocalRange());
+
+    terrain_->render();
     shader_programs_["terrain"]->release();
 
     glPopMatrix();
