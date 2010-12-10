@@ -26,7 +26,7 @@ void main(){
     if(tempVec2.y > 1.0){
         tempVec2.y -= 1.0;
     }
-    vec4 tempVec = texture2D(bumpMap, tempVec2);
+    vec4 tempVec = texture2D(bumpMap, gl_TexCoord[1].st);
     
 
     //normalize the normal
@@ -55,7 +55,11 @@ void main(){
     
     //get the environment color for the refraction
     //vec4 env_color = textureCube(cubeMap, R2);
-    
+
+    // TESTING
+    gl_FragColor = mix(R, tempVec, 0.8) * intensity;
+    //gl_FragColor = texture2D(bumpMap, gl_TexCoord[1].st);
+
     //mix the reflection with the blue of the water
     //gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity;
     gl_FragColor = mix(R, vec4(0.2, 0.2, 0.5, 1.0), 0.2) * intensity2;

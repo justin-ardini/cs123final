@@ -305,11 +305,10 @@ void DrawEngine::load_textures() {
     terrainTextures[1] = load_texture(TERRAIN_TEX1);
     terrainTextures[2] = load_texture(TERRAIN_TEX2);
     terrainTextures[3] = load_texture(TERRAIN_TEX3);
+    bumpMap_ = load_texture(QString("textures/water01_bumpmap.jpg"));
     textures_["cube_map_1"] = load_cube_map(fileList);
 
     terrain_->setTextures(terrainTextures);
-
-    bumpMap_ = load_texture(QString("textures/water01_bumpmap.jpg"));
 }
 
 /**
@@ -512,6 +511,8 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     Renders the reflections of the scene about the water level
 **/
 void DrawEngine::render_reflections() {
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_TEXTURE_CUBE_MAP);
 
     glPushMatrix();
@@ -545,6 +546,7 @@ void DrawEngine::render_reflections() {
 
     glPopMatrix();
 
+    glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glDisable(GL_TEXTURE_CUBE_MAP);
@@ -659,7 +661,10 @@ void DrawEngine::render_water() {
     glBindTexture(GL_TEXTURE_2D, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
+<<<<<<< HEAD:src/drawengine.cpp
 
+=======
+>>>>>>> 76e8c7e49811f88ee98c1ffe62c79012a4608bd6:src/drawengine.cpp
 }
 
 /**
