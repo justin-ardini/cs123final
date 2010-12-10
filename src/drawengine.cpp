@@ -305,11 +305,10 @@ void DrawEngine::load_textures() {
     terrainTextures[1] = load_texture(TERRAIN_TEX1);
     terrainTextures[2] = load_texture(TERRAIN_TEX2);
     terrainTextures[3] = load_texture(TERRAIN_TEX3);
+    bumpMap_ = load_texture(QString("textures/water01_bumpmap.jpg"));
     textures_["cube_map_1"] = load_cube_map(fileList);
 
     terrain_->setTextures(terrainTextures);
-
-    bumpMap_ = load_texture(QString("textures/water01_bumpmap.jpg"));
 }
 
 /**
@@ -332,7 +331,7 @@ GLuint DrawEngine::load_texture(const QFile &file) {
 
     glGenTextures(1, &toReturn);
     glActiveTexture(GL_TEXTURE0 + toReturn);
-    glBindTexture(GL_TEXTURE_2D, GL_TEXTURE0 + toReturn);
+    glBindTexture(GL_TEXTURE_2D, toReturn);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -365,7 +364,7 @@ void DrawEngine::create_fbos(int w,int h) {
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
     framebuffer_objects_["fbo_3"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
-    framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::NoAttachment,
+    framebuffer_objects_["reflection"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
                                                              GL_TEXTURE_2D,GL_RGBA16F_ARB);
 }
 
@@ -512,6 +511,8 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     Renders the reflections of the scene about the water level
 **/
 void DrawEngine::render_reflections() {
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
     glEnable(GL_TEXTURE_CUBE_MAP);
 
     glPushMatrix();
@@ -545,6 +546,7 @@ void DrawEngine::render_reflections() {
 
     glPopMatrix();
 
+    glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     glDisable(GL_TEXTURE_CUBE_MAP);
@@ -625,12 +627,13 @@ void DrawEngine::render_scene(float time,int w,int h) {
 void DrawEngine::render_water() {
     // Bind the reflection to id 0
     glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["reflection"]->texture());
 
     // Bind the bump map to id 1
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, bumpMap_);
     glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, bumpMap_);
 
     // Draw the water quad
     glBegin(GL_QUADS);
@@ -654,6 +657,10 @@ void DrawEngine::render_water() {
         glNormal3f(0, 0, 1);
         glVertex3f(-WATER_QUAD_SIZE, WATER_QUAD_SIZE, SEA_LEVEL);
     glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 /**
