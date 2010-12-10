@@ -315,7 +315,6 @@ GLuint DrawEngine::load_texture(const QFile &file) {
     texture = QGLWidget::convertToGLFormat(image);
 
     glGenTextures(1, &toReturn);
-    std::cout << toReturn << endl;
     glActiveTexture(GL_TEXTURE0 + toReturn);
     glBindTexture(GL_TEXTURE_2D, toReturn);
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, texture.width(), texture.height(), GL_RGBA, GL_UNSIGNED_BYTE, texture.bits());
@@ -689,8 +688,10 @@ void DrawEngine::render_water() {
     glEnd();
 
     glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
     glActiveTexture(GL_TEXTURE7);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
