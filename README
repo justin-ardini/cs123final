@@ -33,6 +33,7 @@ D - toggles depth-of-field
 M - displays the depth values
 Left and Right arrows - change the focal range of the depth of field shader
 Up and Down arrows - change the focal distance of the depth of field shader
+O and P - decrease/increase the blur size of the depth of field shader
 
 
 Credits:

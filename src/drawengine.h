@@ -38,6 +38,7 @@ public:
 
     //methods
     Camera * getCamera() { return &camera_; }
+    float getBlurSize() const { return 1.0f / blurFactor_; }
     void draw_frame(float time, int w, int h);
     void resize_frame(int w, int h);
     void mouse_wheel_event(int dx);
@@ -77,6 +78,7 @@ protected:
     bool depthmapEnabled_; // Show depth map?
     float offsetX_, offsetY_;
     GLuint bumpMap_;
+    float blurFactor_;
 };
 
 #endif // DRAWENGINE_H

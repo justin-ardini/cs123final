@@ -52,7 +52,8 @@ enum SKYBOX_TYPE {
 
 **/
 DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context),
-        dofEnabled_(true), depthmapEnabled_(false), offsetX_(0.0f), offsetY_(0.0f), bumpMap_(-1) {
+        dofEnabled_(true), depthmapEnabled_(false), offsetX_(0.0f), offsetY_(0.0f), bumpMap_(-1),
+        blurFactor_(1.6f) {
     // Initialize OGL settings
     glEnable(GL_TEXTURE_2D);
 
@@ -385,7 +386,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         // Third pass: Gaussian filtering along the X axis
         framebuffer_objects_["fbo_1"]->bind();
         shader_programs_["blur_x"]->bind();
-        shader_programs_["blur_x"]->setUniformValue("Width", w * 2.6f);
+        shader_programs_["blur_x"]->setUniformValue("Width", w * blurFactor_);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_x"]->release();
@@ -395,7 +396,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         // Fourth pass: Gaussian filtering along the Y axis
         framebuffer_objects_["fbo_2"]->bind();
         shader_programs_["blur_y"]->bind();
-        shader_programs_["blur_y"]->setUniformValue("Height", h * 2.6f);
+        shader_programs_["blur_y"]->setUniformValue("Height", h * blurFactor_);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_1"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_y"]->release();
@@ -795,16 +796,30 @@ void DrawEngine::key_press_event(QKeyEvent *event) {
         camera_.m_focalDistance -= 5.0f;
         break;
     case Qt::Key_Left:
-        camera_.m_focalRange -= 5.0f;
+        if (camera_.m_focalRange >= 5.0f) {
+           camera_.m_focalRange -= 5.0f;
+        }
         break;
     case Qt::Key_Right:
-        camera_.m_focalRange += 5.0f;
+        if (camera_.m_focalRange <= 195.0f) {
+           camera_.m_focalRange += 5.0f;
+        }
         break;
     case Qt::Key_D:
         dofEnabled_ = !dofEnabled_;
         break;
     case Qt::Key_M:
         depthmapEnabled_ = !depthmapEnabled_;
+        break;
+    case Qt::Key_O:
+        if (blurFactor_ <= 10) {
+            blurFactor_ += 0.5f;
+        }
+        break;
+    case Qt::Key_P:
+        if (blurFactor_ >= 1.0f) {
+          blurFactor_ -= 0.5f;
+        }
         break;
     }
 }

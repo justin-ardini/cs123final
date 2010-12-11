@@ -5,8 +5,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#define DEFAULT_DISTANCE 10.0f
-#define DEFAULT_RANGE 100.0f
+#define DEFAULT_DISTANCE 0.0f
+#define DEFAULT_RANGE 40.0f
 
 class Camera
 {

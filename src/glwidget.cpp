@@ -84,6 +84,6 @@ void GLWidget::render_text() {
     this->renderText(10.0, 20.0, "FPS: " + QString::number((int)(prev_fps_)), f);
     this->renderText(10.0, 30.0, "Focal Distance: " + QString::number((int)(draw_engine_->getCamera()->getFocalDistance())), f);
     this->renderText(10.0, 40.0, "Focal Range: " + QString::number((int)(draw_engine_->getCamera()->getFocalRange())), f);
-    //this->renderText(10.0, 35.0, "Reflections: ON");
+    this->renderText(10.0, 50.0, "Blur Size: " + QString::number((float) draw_engine_->getBlurSize(), 'g', 3), f);
     glColor3f(1.0f, 1.0f, 1.0f);
 }
