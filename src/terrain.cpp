@@ -92,18 +92,6 @@ void Terrain::render() {
     // Push a new matrix onto the stack for modelling transformations
     glPushMatrix();
 
-    /*
-    glColor3f(0.5f, 0.5f, 0.6f);
-    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
-    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 10, 0, 10, 1.0f };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-    */
-
     float unitIncrement = HEIGHTMAP_TILING_FACTOR/(mSize-1);
     glBegin(GL_QUADS);
     for (int row = 0; row < mSize-1;row++){
@@ -224,11 +212,6 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
     g_regions[3] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 3,
                                  minHeight - TERRAIN_HEIGHT + rangeIncrement * 4, 0, "/course/cs123/pub/lab07/textures/snow.JPG");
 
-    /* for(int location = 0; location < (mSize * mSize); location++){
-        if(terrain[location].z <= SEA_LEVEL){
-            terrain[location].z = SEA_LEVEL;
-        }
-    } */
 }
 
 /**
@@ -247,11 +230,6 @@ void Terrain::populateNormals() {
         }
     }
 
-    /* for(int location = 0; location < (mSize * mSize); location++){
-        if(terrain[location].z <= SEA_LEVEL){
-            normalmap[location] = float3(0.0f, 0.0f, 1.0f);
-        }
-    } */
 }
 
 /**

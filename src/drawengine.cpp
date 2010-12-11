@@ -68,29 +68,6 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     glEnable(GL_TEXTURE_2D);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-    /*
-    // Setup Global Lighting
-    GLfloat global_ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f }; //OpenGL defaults to 0.2, 0.2, 0.2, 1.0
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-    // Setup Local Lighting
-
-    GLfloat ambientLight[] = {0.1f, 0.1f, 0.1f, 1.0f};
-    GLfloat diffuseLight[] = { 1.0f, 1.0f, 1.0, 1.0f };
-    GLfloat specularLight[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-    GLfloat position[] = { 0, 10, 5, 1.0f };
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
-    glLightfv(GL_LIGHT0, GL_POSITION, position);
-
-    glClearColor(0, 0, 0, 0); //Set the color to clear buffers to
-
-    glEnable(GL_LIGHTING); //Enable lighting
-    glEnable(GL_LIGHT0);
-    */
-
     glFrontFace(GL_CCW);
     glDisable(GL_DITHER);
     glDisable(GL_LIGHTING);
@@ -144,25 +121,6 @@ DrawEngine::~DrawEngine() {
 **/
 void DrawEngine::load_models() {
     cout << "Loading models..." << endl;
-    /* models_["dragon"].model = glmReadOBJ("/home/jardini/course/cs123_labs/lab09/src/models/xyzrgb_dragon.obj");
-    glmUnitize(models_["dragon"].model);
-    models_["dragon"].idx = glmList(models_["dragon"].model,GLM_SMOOTH);
-    cout << "\t  [32m/course/cs123/data/mesh/xyzrgb_dragon_old.obj [0m" << endl;
-    //Create grid
-    models_["grid"].idx = glGenLists(1);
-    glNewList(models_["grid"].idx,GL_COMPILE);
-    float r = 1.f,dim = 10,delta = r * 2 / dim;
-    for(int y = 0; y < dim; ++y) {
-        glBegin(GL_QUAD_STRIP);
-        for(int x = 0; x <= dim; ++x) {
-            glVertex2f(x * delta - r,y * delta - r);
-            glVertex2f(x * delta - r,(y + 1) * delta - r);
-        }
-        glEnd();
-    }
-    glEndList();
-    cout << "\t  grid compiled" << endl;
-    */
     models_["skybox"].idx = glGenLists(1);
     glNewList(models_["skybox"].idx,GL_COMPILE);
     //Be glad we wrote this for you...ugh.
@@ -243,7 +201,7 @@ void DrawEngine::load_shaders() {
 
     shader_programs_["depthmap"] = new QGLShaderProgram(context_);
     shader_programs_["depthmap"]->addShaderFromSourceFile(QGLShader::Vertex,
-                                                            "shaders/downsample.vert");
+                                                            "shaders/depthmap.vert");
     shader_programs_["depthmap"]->addShaderFromSourceFile(QGLShader::Fragment,
                                                             "shaders/depthmap.frag");
     shader_programs_["depthmap"]->link();
@@ -427,7 +385,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         // Third pass: Gaussian filtering along the X axis
         framebuffer_objects_["fbo_1"]->bind();
         shader_programs_["blur_x"]->bind();
-        shader_programs_["blur_x"]->setUniformValue("Width", w * 3.0f);
+        shader_programs_["blur_x"]->setUniformValue("Width", w * 2.6f);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_x"]->release();
@@ -437,7 +395,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         // Fourth pass: Gaussian filtering along the Y axis
         framebuffer_objects_["fbo_2"]->bind();
         shader_programs_["blur_y"]->bind();
-        shader_programs_["blur_y"]->setUniformValue("Height", h * 3.0f);
+        shader_programs_["blur_y"]->setUniformValue("Height", h * 2.6f);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_1"]->texture());
         textured_quad(w, h, true);
         shader_programs_["blur_y"]->release();

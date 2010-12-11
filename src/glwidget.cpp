@@ -73,7 +73,7 @@ void GLWidget::keyPressEvent(QKeyEvent *event) {
 }
 
 void GLWidget::render_text() {
-    glColor3f(1.f, 1.f, 1.f);
+    glColor3f(1.0f, 0.0f, 0.0f);
     QFont f("Deja Vu Sans Mono", 8, 4, false);
     float fps =  draw_engine_->fps();
     if (fps >= 0 && fps < 1000) {
@@ -85,5 +85,5 @@ void GLWidget::render_text() {
     this->renderText(10.0, 30.0, "Focal Distance: " + QString::number((int)(draw_engine_->getCamera()->getFocalDistance())), f);
     this->renderText(10.0, 40.0, "Focal Range: " + QString::number((int)(draw_engine_->getCamera()->getFocalRange())), f);
     //this->renderText(10.0, 35.0, "Reflections: ON");
-
+    glColor3f(1.0f, 1.0f, 1.0f);
 }
