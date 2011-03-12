@@ -53,7 +53,7 @@ protected:
     void perspective_camera(int w, int h);
     void orthogonal_camera(int w, int h);
     void textured_quad(int w, int h, bool flip);
-    void render_scene(float time, int w, int h);
+    void render_scene(int w, int h);
     void realloc_framebuffers(int w, int h);
     void load_models();
     void load_textures();
@@ -65,7 +65,7 @@ protected:
     void render_reflections();
     void render_refraction();
 
-    //member variables
+    // Member variables
     QHash<QString, QGLShaderProgram *> shader_programs_; // hash map of all shader programs
     QHash<QString, QGLFramebufferObject *> framebuffer_objects_; // hash map of all framebuffer objects
     QHash<QString, Model> models_; // hashmap of all models
@@ -74,8 +74,8 @@ protected:
     float previous_time_, fps_; // the previous time and the fps counter
     Camera camera_; // a simple camera struct
     Terrain *terrain_;
-    bool dofEnabled_; // Depth of field?
-    bool depthmapEnabled_; // Show depth map?
+    bool dofEnabled_;       // Enable depth of field
+    bool depthmapEnabled_;  // Enable depth map
     float offsetX_, offsetY_;
     GLuint bumpMap_;
     float blurFactor_;

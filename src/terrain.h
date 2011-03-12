@@ -7,7 +7,7 @@
 #include <QGLShader>
 #include <QFile>
 
-//for terrain shader
+// For terrain shader
 struct TerrainRegion
 {
     float min;
@@ -63,20 +63,18 @@ public:
     GLuint getTextureInt(int i);
 
 private:
-    //terrain stuff
-    float3 * terrain;
-    float3 * normalmap;
-    GLint mDepth;
-    GLfloat mDecay;
-    GLint mSize;
-    GLfloat mRoughness;
-    GLfloat mScale;
-    bool mIncreasing;
-
     static const int TERRAIN_REGIONS_COUNT = 4;
     static const float HEIGHTMAP_TILING_FACTOR = 4;
 
-    TerrainRegion g_regions[TERRAIN_REGIONS_COUNT];
+    float3 * terrain_;
+    float3 * normalmap_;
+    GLint depth_;
+    GLfloat decay_;
+    GLint size_;
+    GLfloat roughness_;
+    GLfloat scale_;
+    bool increasing_;
+    TerrainRegion regions_[TERRAIN_REGIONS_COUNT];
 };
 
 #endif // TERRAIN_H

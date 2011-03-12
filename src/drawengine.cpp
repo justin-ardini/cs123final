@@ -1,15 +1,10 @@
-/**
-  A simple OpenGL drawing engine.
-
-  @author psastras
-**/
-
 #define GL_GLEXT_LEGACY // no glext.h, we have our own
 #include <GL/gl.h>
 #define GL_GLEXT_PROTOTYPES
 #include "glext.h"
 #include <GL/glu.h>
 #include "glm.h"
+
 #include "drawengine.h"
 #include <QKeyEvent>
 #include <QGLContext>
@@ -40,18 +35,17 @@ enum SKYBOX_TYPE {
 
 
 /**
-  @paragraph DrawEngine ctor.  Expects a Valid OpenGL context and the viewport's current
+  DrawEngine ctor.  Expects a Valid OpenGL context and the viewport's current
   width and height.  Initializes the draw engine.  Loads models,textures,shaders,
   and allocates framebuffers.  Also sets up OpenGL to begin drawing.
 
   @param context The current OpenGL context this drawing engine is associated with.
   Probably should be the context from the QGLWidget.
-
   @param w The viewport width used to allocate the correct framebuffer size.
   @param h The viewport heigh used to alloacte the correct framebuffer size.
 
 **/
-DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context),
+DrawEngine::DrawEngine(const QGLContext *context, int w, int h) : context_(context),
         dofEnabled_(true), depthmapEnabled_(false), offsetX_(0.0f), offsetY_(0.0f), bumpMap_(-1),
         blurFactor_(1.6f) {
     // Initialize OGL settings
@@ -74,13 +68,13 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     glDisable(GL_LIGHTING);
     glClearColor(0.0f,0.0f,0.0f,0.0f);
 
-    //init member variables
+    // Initialize member variables
     previous_time_ = 0.0;
 
-    //init resources - so i heard you like colored text?
+    //Initialize resources
     cout << "Using OpenGL Version " << glGetString(GL_VERSION) << endl << endl;
-    //ideally we would now check to make sure all the OGL functions we use are supported
-    //by the video card.  but that's a pain to do so we're not going to.
+    // Ideally we would now check to make sure all the OGL functions we use are supported
+    // by the video card.  but that's a pain to do so we're not going to.
 
     cout << "Loading Resources" << endl;
     load_models();
@@ -101,9 +95,6 @@ DrawEngine::DrawEngine(const QGLContext *context,int w,int h) : context_(context
     cout << "Rendering..." << endl;
 }
 
-/**
-  @paragraph Dtor
-**/
 DrawEngine::~DrawEngine() {
     delete terrain_;
     foreach(QGLShaderProgram *sp,shader_programs_)
@@ -117,7 +108,7 @@ DrawEngine::~DrawEngine() {
 }
 
 /**
-  @paragraph Loads models used by the program.  Caleed by the ctor once upon
+  Loads models used by the program.  Caleed by the ctor once upon
   initialization.
 **/
 void DrawEngine::load_models() {
@@ -156,7 +147,7 @@ void DrawEngine::load_models() {
     cout << "\t  skybox compiled " << endl;
 }
 /**
-  @paragraph Loads shaders used by the program.  Caleed by the ctor once upon
+  Loads shaders used by the program.  Caleed by the ctor once upon
   initialization.
 **/
 void DrawEngine::load_shaders() {
@@ -210,7 +201,7 @@ void DrawEngine::load_shaders() {
 }
 
 /**
-  @paragraph Loads textures used by the program.  Caleed by the ctor once upon
+  Loads textures used by the program.  Caleed by the ctor once upon
   initialization.
 **/
 void DrawEngine::load_textures() {
@@ -286,7 +277,7 @@ GLuint DrawEngine::load_texture(const QFile &file) {
 
 
 /**
-  @paragraph Creates the intial framebuffers for drawing.  Called by the ctor once
+  Creates the intial framebuffers for drawing.  Called by the ctor once
   upon initialization.
 
   @todo Finish filling this in.
@@ -294,7 +285,7 @@ GLuint DrawEngine::load_texture(const QFile &file) {
   @param w:    the viewport width
   @param h:    the viewport height
 **/
-void DrawEngine::create_fbos(int w,int h) {
+void DrawEngine::create_fbos(int w, int h) {
     //Allocate the main framebuffer object for rendering the scene to
     //This needs a depth attachment.
     framebuffer_objects_["fbo_0"] = new QGLFramebufferObject(w,h,QGLFramebufferObject::Depth,
@@ -313,13 +304,13 @@ void DrawEngine::create_fbos(int w,int h) {
 }
 
 /**
-  @paragraph Reallocates all the framebuffers.  Called when the viewport is
+  Reallocates all the framebuffers.  Called when the viewport is
   resized.
 
   @param w:    the viewport width
   @param h:    the viewport height
 **/
-void DrawEngine::realloc_framebuffers(int w,int h) {
+void DrawEngine::realloc_framebuffers(int w, int h) {
     foreach(QGLFramebufferObject *fbo,framebuffer_objects_)  {
         const QString &key = framebuffer_objects_.key(fbo);
         QGLFramebufferObjectFormat format = fbo->format();
@@ -330,14 +321,14 @@ void DrawEngine::realloc_framebuffers(int w,int h) {
 
 
 /**
-  @paragraph Should render one frame at the given elapsed time in the program.
+  Should render one frame at the given elapsed time in the program.
   Assumes that the GL context is valid when this method is called.
 
   @param time: the current program time in milliseconds
   @param w:    the viewport width
   @param h:    the viewport height
 **/
-void DrawEngine::draw_frame(float time,int w,int h) {
+void DrawEngine::draw_frame(float time, int w, int h) {
     fps_ = 1000.f / (time - previous_time_), previous_time_ = time;
 
     // Render just the reflected scene about sea level to a framebuffer
@@ -369,7 +360,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
     perspective_camera(w, h);
     // Ensure that GL_TEXTURE0 is active before rendering the scene!
     glActiveTexture(GL_TEXTURE0);
-    render_scene(time, w, h);
+    render_scene(w, h);
     framebuffer_objects_["fbo_0"]->release();
 
     orthogonal_camera(w, h);
@@ -383,6 +374,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         shader_programs_["depthmap"]->release();
     } else if (dofEnabled_) {
         glViewport(0, 0, w, h);
+
         // Third pass: Gaussian filtering along the X axis
         framebuffer_objects_["fbo_1"]->bind();
         shader_programs_["blur_x"]->bind();
@@ -412,8 +404,6 @@ void DrawEngine::draw_frame(float time,int w,int h) {
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_0"]->texture());
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, framebuffer_objects_["fbo_2"]->texture());
-
-        //glViewport(0, 0, w, h);
 
         // Multitextured quad
         glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
@@ -450,7 +440,7 @@ void DrawEngine::draw_frame(float time,int w,int h) {
 
 
 /**
-    Renders the reflections of the scene about the water level
+  Renders the reflections of the scene about the water level
 **/
 void DrawEngine::render_reflections() {
     glEnable(GL_DEPTH_TEST);
@@ -532,14 +522,15 @@ void DrawEngine::render_refraction() {
 
 
 /**
-  @paragraph Renders the actual scene.  May be called multiple times by
+  Renders the actual scene.  May be called multiple times by
   DrawEngine::draw_frame(float time,int w,int h) if necessary.
 
+  @param time: the current time
   @param w: the viewport width
   @param h: the viewport height
 
 **/
-void DrawEngine::render_scene(float time,int w,int h) {
+void DrawEngine::render_scene(int w, int h) {
     glEnable(GL_DEPTH_TEST);
     glClear(GL_DEPTH_BUFFER_BIT);
     glActiveTexture(GL_TEXTURE0);
@@ -656,7 +647,7 @@ void DrawEngine::render_water() {
 }
 
 /**
-  @paragraph Draws a textured quad. The texture most be bound and unbound
+  Draws a textured quad. The texture most be bound and unbound
   before and after calling this method - this method assumes that the texture
   has been bound before hand.
 
@@ -665,7 +656,7 @@ void DrawEngine::render_water() {
   @param flip: flip the texture vertically
 
 **/
-void DrawEngine::textured_quad(int w,int h,bool flip) {
+void DrawEngine::textured_quad(int w, int h, bool flip) {
     glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
     glBegin(GL_QUADS);
@@ -681,7 +672,7 @@ void DrawEngine::textured_quad(int w,int h,bool flip) {
 }
 
 /**
-  @paragraph Called to switch to the perspective OpenGL camera.
+  Called to switch to the perspective OpenGL camera.
   Used to render the scene regularly with the current camera parameters.
 
   @param w: the viewport width
@@ -691,12 +682,12 @@ void DrawEngine::textured_quad(int w,int h,bool flip) {
 void DrawEngine::perspective_camera(int w, int h) {
     float ratio = w / static_cast<float>(h);
 
-    // set up projection matrix
+    // Set up projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(camera_.m_fovy, ratio, camera_.m_near, camera_.m_far);
+    gluPerspective(camera_.fovy_, ratio, camera_.near_, camera_.far_);
 
-    // set up modelview matrix
+    // Set up modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     camera_.multMatrix();
@@ -704,14 +695,14 @@ void DrawEngine::perspective_camera(int w, int h) {
 }
 
 /**
-  @paragraph Called to switch to an orthogonal OpenGL camera.
+  Called to switch to an orthogonal OpenGL camera.
   Useful for rending a textured quad across the whole screen.
 
-  @param w: the viewport width
-  @param h: the viewport height
+  @param w the viewport width
+  @param h the viewport height
 
 **/
-void DrawEngine::orthogonal_camera(int w,int h) {
+void DrawEngine::orthogonal_camera(int w, int h) {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0,static_cast<float>(w),static_cast<float>(h),0.f,-1.f,1.f);
@@ -720,44 +711,44 @@ void DrawEngine::orthogonal_camera(int w,int h) {
 }
 
 /**
-  @paragraph Called when the viewport has been resized. Needs to
+  Called when the viewport has been resized. Needs to
   resize the camera perspective and reallocate the framebuffer
   sizes.
 
-  @param w: the viewport width
-  @param h: the viewport height
+  @param w the viewport width
+  @param h the viewport height
 
 **/
-void DrawEngine::resize_frame(int w,int h) {
+void DrawEngine::resize_frame(int w, int h) {
     glViewport(0,0,w,h);
     realloc_framebuffers(w,h);
 }
 
 /**
-  @paragraph Called by GLWidget when the mouse is dragged.  Rotates the camera
+  Called by GLWidget when the mouse is dragged.  Rotates the camera
   based on mouse movement.
 
-  @param p0: the old mouse position
-  @param p1: the new mouse position
+  @param p0 the old mouse position
+  @param p1 the new mouse position
 **/
 void DrawEngine::mouse_drag_event(float2 p0, float2 p1, const Qt::MouseButtons &buttons) {
     camera_.mouseMove(Vector2(p1.x - p0.x, p1.y - p0.y), buttons);
 }
 
 /**
-  @paragraph Called by GLWidget when the mouse wheel is turned. Zooms the camera in
+  Called by GLWidget when the mouse wheel is turned. Zooms the camera in
   and out.
 
-  @param dx: The delta value of the mouse wheel movement.
+  @param dx The delta value of the mouse wheel movement.
 **/
 void DrawEngine::mouse_wheel_event(int dx) {
     camera_.mouseWheel(dx);
 }
 
 /**
-  @paragraph Loads the cube map into video memory.
+  Loads the cube map into video memory.
 
-  @param files: a list of files containing the cube map images (should be length
+  @param files a list of files containing the cube map images (should be length
   six) in order.
   @return The assigned OpenGL id to the cube map.
 **/
@@ -783,26 +774,26 @@ GLuint DrawEngine::load_cube_map(QList<QFile *> files) {
 
 
 /**
-  @paragraph Called when a key has been pressed in the GLWidget.
+  Called when a key has been pressed in the GLWidget.
 
-  @param event: The key press event associated with the current key press.
+  @param event The key press event associated with the current key press.
   **/
 void DrawEngine::key_press_event(QKeyEvent *event) {
     switch(event->key()) {
     case Qt::Key_Up:
-        camera_.m_focalDistance += 5.0f;
+        camera_.focalDistance_ += 5.0f;
         break;
     case Qt::Key_Down:
-        camera_.m_focalDistance -= 5.0f;
+        camera_.focalDistance_ -= 5.0f;
         break;
     case Qt::Key_Left:
-        if (camera_.m_focalRange >= 5.0f) {
-           camera_.m_focalRange -= 5.0f;
+        if (camera_.focalRange_ >= 5.0f) {
+           camera_.focalRange_ -= 5.0f;
         }
         break;
     case Qt::Key_Right:
-        if (camera_.m_focalRange <= 195.0f) {
-           camera_.m_focalRange += 5.0f;
+        if (camera_.focalRange_ <= 195.0f) {
+           camera_.focalRange_ += 5.0f;
         }
         break;
     case Qt::Key_D:

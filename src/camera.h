@@ -14,15 +14,15 @@ public:
     Camera();
     ~Camera();
 
-    float getFocalDistance() const { return m_focalDistance; }
-    float getFocalRange() const { return m_focalRange; }
-    Vector4 getEye() const { return m_eye; }
-    Vector4 getLook() const { return m_look; }
-    Vector4 getUp() const { return m_up; }
+    float getFocalDistance() const { return focalDistance_; }
+    float getFocalRange() const { return focalRange_; }
+    Vector4 getEye() const { return eye_; }
+    Vector4 getLook() const { return look_; }
+    Vector4 getUp() const { return up_; }
 
-    Vector4 getU() const { return m_look.cross(m_up).getNormalized(); }
-    Vector4 getV() const { return getU().cross(m_look).getNormalized(); }
-    Vector4 getW() const { return -m_look.getNormalized(); }
+    Vector4 getU() const { return look_.cross(up_).getNormalized(); }
+    Vector4 getV() const { return getU().cross(look_).getNormalized(); }
+    Vector4 getW() const { return -look_.getNormalized(); }
 
     void multMatrix();
     void lookAt(const Vector4 &eye, const Vector4 &look, const Vector4 &up);
@@ -30,10 +30,10 @@ public:
     void mouseMove(const Vector2 &delta, const Qt::MouseButtons &buttons);
     void mouseWheel(float delta);
 
-    Vector4 m_eye, m_look, m_up;
-    float m_near, m_far;
-    float m_fovy;
-    float m_focalDistance, m_focalRange;
+    Vector4 eye_, look_, up_;
+    float near_, far_;
+    float fovy_;
+    float focalDistance_, focalRange_;
 
 private:
     void filmPlaneTranslate(const Vector2 &delta);

@@ -7,67 +7,67 @@ using std::endl;
 #define TERRAIN_HEIGHT 1.8f
 
 Terrain::Terrain() {
-    mRoughness = 5;
-    mDecay = 3;
-    mScale = 0;
-    mDepth = 8;
-    mIncreasing = true;
-    mSize = pow(2, mDepth) + 1;
-    int terrain_size = mSize * mSize;
-    terrain = new float3[terrain_size];
-    normalmap = new float3[terrain_size];
+    roughness_ = 5;
+    decay_ = 3;
+    scale_ = 0;
+    depth_ = 8;
+    increasing_ = true;
+    size_ = pow(2, depth_) + 1;
+    int terrain_size = size_ * size_;
+    terrain_ = new float3[terrain_size];
+    normalmap_ = new float3[terrain_size];
 }
 
 
 Terrain::~Terrain() {
-    delete[] terrain;
-    delete[] normalmap;
+    delete[] terrain_;
+    delete[] normalmap_;
 }
 
 
 /**
-  adds uniform variables for terrain shader stuff, you need to fill this in for the terrain shader
+  Adds uniform variables for the terrain shader
   **/
 void Terrain::updateTerrainShaderParameters(QGLShaderProgram *shader) {
-    shader->setUniformValue("region1ColorMap", g_regions[0].texture);
-    shader->setUniformValue("region2ColorMap", g_regions[1].texture);
-    shader->setUniformValue("region3ColorMap", g_regions[2].texture);
-    shader->setUniformValue("region4ColorMap", g_regions[3].texture);
-    shader->setUniformValue("region1Min", g_regions[0].min);
-    shader->setUniformValue("region2Min", g_regions[1].min);
-    shader->setUniformValue("region3Min", g_regions[2].min);
-    shader->setUniformValue("region4Min", g_regions[3].min);
-    shader->setUniformValue("region1Max", g_regions[0].max);
-    shader->setUniformValue("region2Max", g_regions[1].max);
-    shader->setUniformValue("region3Max", g_regions[2].max);
-    shader->setUniformValue("region4Max", g_regions[3].max);
+    shader->setUniformValue("region1ColorMap", regions_[0].texture);
+    shader->setUniformValue("region2ColorMap", regions_[1].texture);
+    shader->setUniformValue("region3ColorMap", regions_[2].texture);
+    shader->setUniformValue("region4ColorMap", regions_[3].texture);
+    shader->setUniformValue("region1Min", regions_[0].min);
+    shader->setUniformValue("region2Min", regions_[1].min);
+    shader->setUniformValue("region3Min", regions_[2].min);
+    shader->setUniformValue("region4Min", regions_[3].min);
+    shader->setUniformValue("region1Max", regions_[0].max);
+    shader->setUniformValue("region2Max", regions_[1].max);
+    shader->setUniformValue("region3Max", regions_[2].max);
+    shader->setUniformValue("region4Max", regions_[3].max);
     shader->setUniformValue("cubeMap", 0);
 }
 
 
 float3 * Terrain::getTerrain() {
-    return terrain;
+    return terrain_;
 }
 
 GLint Terrain::getTerrainSize() {
-    return mSize * mSize;
+    return size_ * size_;
 }
 
 float3 * Terrain::getNormalMap() {
-    return normalmap;
+    return normalmap_;
 }
 
 void Terrain::setTextures(GLuint textures[4]) {
-    g_regions[0].texture = textures[0];
-    g_regions[1].texture = textures[1];
-    g_regions[2].texture = textures[2];
-    g_regions[3].texture = textures[3];
+    regions_[0].texture = textures[0];
+    regions_[1].texture = textures[1];
+    regions_[2].texture = textures[2];
+    regions_[3].texture = textures[3];
 }
 
 
 //stuff for tiling of textures, ignore it
 bool Terrain::isMultiple(int index) {
-    float val = (float)index/((mSize-1)/HEIGHTMAP_TILING_FACTOR);
+    float val = (float)index/((size_-1)/HEIGHTMAP_TILING_FACTOR);
     if (val - (int)val == 0){
         return true;
     }
@@ -80,8 +80,7 @@ float2 Terrain::wrap(float2 val){
 
 
 /**
-    The main drawing method which will be called 30 frames per second. All of the tesselation is done for you.
-    You need to worry about texturing the terrain here.
+  The main drawing method which will be called 30 frames per second.
 **/
 void Terrain::render() {
     //float time = mIncrement++ / (float)mFPS;
@@ -92,18 +91,18 @@ void Terrain::render() {
     // Push a new matrix onto the stack for modelling transformations
     glPushMatrix();
 
-    float unitIncrement = HEIGHTMAP_TILING_FACTOR/(mSize-1);
+    float unitIncrement = HEIGHTMAP_TILING_FACTOR/(size_-1);
     glBegin(GL_QUADS);
-    for (int row = 0; row < mSize-1;row++){
-        for (int column= 0; column < mSize-1;column++){
-            float3 tlv = terrain[row*mSize + column];
-            float3 tln = normalmap[row*mSize + column];
-            float3 blv = terrain[(row+1)*mSize + column];
-            float3 bln = normalmap[(row+1)*mSize + column];
-            float3 brv = terrain[(row+1)*mSize + column+1];
-            float3 brn = normalmap[(row+1)*mSize + column+1];
-            float3 trv = terrain[row*mSize + column+1];
-            float3 trn = normalmap[row*mSize + column+1];
+    for (int row = 0; row < size_-1;row++){
+        for (int column= 0; column < size_-1;column++){
+            float3 tlv = terrain_[row*size_ + column];
+            float3 tln = normalmap_[row*size_ + column];
+            float3 blv = terrain_[(row+1)*size_ + column];
+            float3 bln = normalmap_[(row+1)*size_ + column];
+            float3 brv = terrain_[(row+1)*size_ + column+1];
+            float3 brn = normalmap_[(row+1)*size_ + column+1];
+            float3 trv = terrain_[row*size_ + column+1];
+            float3 trn = normalmap_[row*size_ + column+1];
 
             float2 tlc = wrap(float2(row*unitIncrement,column*unitIncrement));
             float2 blc = wrap(float2((row+1)*unitIncrement,column*unitIncrement));
@@ -145,29 +144,29 @@ void Terrain::render() {
 
 
 /**
-  takes in a coordinate, (row, col),
+  Takes in a coordinate, (row, col),
   outputs -1 if the coordinate is not valid,
   the corresponding index in an array otherwise, give the width of
-  each row, mSize
+  each row, size_
   **/
 GLint Terrain::coordinateToIndex(float2 c) {
-    if (c.row < 0 || c.row >= mSize || c.col < 0 || c.col >= mSize){
+    if (c.row < 0 || c.row >= size_ || c.col < 0 || c.col >= size_){
         return -1;
     }
-    return c.row*mSize+c.col;
+    return c.row * size_ + c.col;
 }
 /**
-  initializes the height map's corner values, fills the map
+  Initializes the height map's corner values, fills the map
   **/
 void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
-    terrain[0] = tl;
-    terrain[mSize-1] = tr;
-    terrain[(mSize-1)*mSize] = bl;
-    terrain[(mSize*mSize-1)] = br;
-    for (int i = 0; i < mDepth; i++){
+    terrain_[0] = tl;
+    terrain_[size_-1] = tr;
+    terrain_[(size_-1)*size_] = bl;
+    terrain_[(size_*size_-1)] = br;
+    for (int i = 0; i < depth_; i++){
         int numincrements = pow(2,i);
-        int gsize = mSize/numincrements;
-        if (gsize == mSize){
+        int gsize = size_/numincrements;
+        if (gsize == size_){
             gsize --;
         }
         for (int row = 0; row <numincrements;row++){
@@ -187,12 +186,12 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
     }
     float maxHeight = 0;
     float minHeight = 0;
-    for (int row = 0; row < mSize;row++){
-        for (int col = 0; col < mSize; col++){
-            float rowDiff = row - 0.5 * mSize;
-            float colDiff = col - 0.5 * mSize;
-            terrain[coordinateToIndex(float2(row,col))].z += 0.00022 * ((rowDiff * rowDiff) + (colDiff * colDiff));
-            float curHeight = terrain[coordinateToIndex(float2(row,col))].z;
+    for (int row = 0; row < size_;row++){
+        for (int col = 0; col < size_; col++){
+            float rowDiff = row - 0.5 * size_;
+            float colDiff = col - 0.5 * size_;
+            terrain_[coordinateToIndex(float2(row,col))].z += 0.00022 * ((rowDiff * rowDiff) + (colDiff * colDiff));
+            float curHeight = terrain_[coordinateToIndex(float2(row,col))].z;
             if (curHeight < minHeight){
                 minHeight = curHeight;
             }
@@ -203,44 +202,44 @@ void Terrain::populateTerrain(float3 tl, float3 tr, float3 bl, float3 br) {
     }
     float rangeIncrement = (maxHeight - minHeight) / 4.0;
 
-    g_regions[0] = TerrainRegion(minHeight - TERRAIN_HEIGHT,
+    regions_[0] = TerrainRegion(minHeight - TERRAIN_HEIGHT,
                                  minHeight - TERRAIN_HEIGHT + rangeIncrement, 0, "/course/cs123/pub/lab07/textures/dirt.JPG");
-    g_regions[1] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement,
+    regions_[1] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement,
                                  minHeight - TERRAIN_HEIGHT + rangeIncrement * 2, 0, "/course/cs123/pub/lab07/textures/grass.JPG");
-    g_regions[2] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 2,
+    regions_[2] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 2,
                                  minHeight - TERRAIN_HEIGHT + rangeIncrement * 3, 0, "/course/cs123/pub/lab07/textures/rock.JPG");
-    g_regions[3] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 3,
+    regions_[3] = TerrainRegion(minHeight - TERRAIN_HEIGHT + rangeIncrement * 3,
                                  minHeight - TERRAIN_HEIGHT + rangeIncrement * 4, 0, "/course/cs123/pub/lab07/textures/snow.JPG");
 
 }
 
 /**
-  populates all the normals...
+  Populates all the terrain normals
   **/
 void Terrain::populateNormals() {
-    for (int row = 0; row < mSize; row++){
-        for (int column = 0; column < mSize ; column++){
+    for (int row = 0; row < size_; row++){
+        for (int column = 0; column < size_ ; column++){
             float3 surround[8];
             GLint numVecs = getSurroundingVectors(row, column, surround);
             float3 normals[8];
             for (int i = 0; i < 8; i++){
                 normals[i] = findnormal(surround[i], surround[(i+1)%8]);
             }
-            normalmap[row*mSize+column] = averageNormal(normals, numVecs).getNormalized();
+            normalmap_[row*size_+column] = averageNormal(normals, numVecs).getNormalized();
         }
     }
 
 }
 
 /**
-    Finds all vectors from vertex at grid coordinate (i,j) to surrounding vectors.
-    These vectors are stored in vecs.
-    Returns a the number of resulting vectors that aren't(0,0,0)(edge cases)
-    **/
+  Finds all vectors from vertex at grid coordinate (i,j) to surrounding vectors.
+  These vectors are stored in vecs.
+  Returns a the number of resulting vectors that aren't(0,0,0)(edge cases)
+  **/
 GLint Terrain::getSurroundingVectors(int row , int column, float3* vecs) {
     //ordering: left, top, right, bottom
     float2 curCoord(row,column);
-    float3 curVert = terrain[coordinateToIndex(curCoord)];
+    float3 curVert = terrain_[coordinateToIndex(curCoord)];
     GLint numVecs = 0;
     // the left vector
     float2 coords[8];
@@ -261,7 +260,7 @@ GLint Terrain::getSurroundingVectors(int row , int column, float3* vecs) {
             vecs[i] = float3(0,0,0);
         }
         else{
-            float3 otherVert = terrain[indices[i]];
+            float3 otherVert = terrain_[indices[i]];
             vecs[i] = otherVert - curVert;
             numVecs++;
         }
@@ -271,7 +270,7 @@ GLint Terrain::getSurroundingVectors(int row , int column, float3* vecs) {
 
 /**
   findnormal: Given two vectors, finds the vector perpendicular to both
-      **/
+  **/
 float3 Terrain::findnormal(float3 vec1, float3 vec2) {
     float3 toreturn = (vec1.cross(vec2));
     if (toreturn.x != 0 || toreturn.y != 0 || toreturn.z != 0){
@@ -281,9 +280,8 @@ float3 Terrain::findnormal(float3 vec1, float3 vec2) {
 }
 /**
   averageNormal: give some number of normals, numNorm,
-      finds the average normal. If a normal is unspecified it will be
-      0,0,0
-      **/
+  finds the average normal. If a normal is unspecified it will be 0,0,0
+  **/
 float3 Terrain::averageNormal (float3 * n, int numNorm){
     float3 toreturn = n[0] + n[1] + n[2] + n[3] + n[4] + n[5] + n[6] + n[7];
     if (numNorm == 8){
@@ -297,11 +295,10 @@ float3 Terrain::averageNormal (float3 * n, int numNorm){
 }
 
 /**
-  returns a random value to perturb a vertex by based on an inputed level of depth
-  Feel free to modify this
+  Returns a random value to perturb a vertex by based on an inputed level of depth
   **/
 double Terrain::getPerturb(int cur_depth) {
-    double toreturn = mRoughness*pow(((double)cur_depth/mDepth), mDecay)*((rand()%200-100)/100.0);
+    double toreturn = roughness_*pow(((double)cur_depth/depth_), decay_)*((rand()%200-100)/100.0);
     return toreturn;
 }
 
@@ -309,16 +306,16 @@ double Terrain::getPerturb(int cur_depth) {
   Does the diamond step, fills the center of the square with a value
   **/
 void Terrain::fillSquare(float2 tlg, float2 brg, int depth) {
-    float3 tl = terrain[coordinateToIndex(tlg)];
-    float3 br = terrain[coordinateToIndex(brg)];
+    float3 tl = terrain_[coordinateToIndex(tlg)];
+    float3 br = terrain_[coordinateToIndex(brg)];
     float2 trg(tlg.row,brg.col);
     float2 blg(brg.row,tlg.col);
-    float3 tr = terrain[coordinateToIndex(trg)];
-    float3 bl = terrain[coordinateToIndex(blg)];
+    float3 tr = terrain_[coordinateToIndex(trg)];
+    float3 bl = terrain_[coordinateToIndex(blg)];
     float2 midg((tlg.row+brg.row)/2, (tlg.col+brg.col)/2);
     float3 mid((br.x+bl.x+tr.x+tl.x)/4,(bl.y+tr.y+tl.y+br.y)/4,
-               ((tl.z+tr.z+bl.z+br.z)/4)+getPerturb(mDepth-depth)) ;
-    terrain[coordinateToIndex(midg)] = mid;
+               ((tl.z+tr.z+bl.z+br.z)/4)+getPerturb(depth_-depth)) ;
+    terrain_[coordinateToIndex(midg)] = mid;
 }
 
 /**
@@ -330,8 +327,8 @@ void Terrain::fillAllDiamonds(float2 tl, float2 br, int depth){
     float2 top(tl.row,(tl.col+br.col)/2 );
     float2 right((tl.row+br.row)/2,br.col);
     float2 bot( br.row,(tl.col+br.col)/2);
-    float3 actualtl(terrain[coordinateToIndex(tl)]);
-    float3 actualbr(terrain[coordinateToIndex(br)]);
+    float3 actualtl(terrain_[coordinateToIndex(tl)]);
+    float3 actualbr(terrain_[coordinateToIndex(br)]);
     float2 leftxy(actualtl.x, (actualtl.y+actualbr.y)/2);
     float2 topxy((actualtl.x+actualbr.x)/2,actualtl.y);
     float2 rightxy(actualbr.x, (actualtl.y+actualbr.y)/2);
@@ -358,30 +355,30 @@ void Terrain::fillDiamond(float2 ptof, int dist,float2 xy, int depth){
     int num_add= 0;
     float3 diamond(xy.x, xy.y,0);
     if (leftindex != -1){
-        diamond.z += terrain[leftindex].z;
+        diamond.z += terrain_[leftindex].z;
         num_add++;
     }
     if (topindex != -1){
-        diamond.z += terrain[topindex].z;
+        diamond.z += terrain_[topindex].z;
         num_add++;
     }
     if (rightindex != -1){
-        diamond.z += terrain[rightindex].z;
+        diamond.z += terrain_[rightindex].z;
         num_add++;
     }
     if (botindex != -1){
-        diamond.z += terrain[botindex].z;
+        diamond.z += terrain_[botindex].z;
         num_add++;
     }
     diamond.z /= num_add;
-    diamond.z += getPerturb(mDepth-depth);
+    diamond.z += getPerturb(depth_-depth);
 
-    terrain[coordinateToIndex(ptof)] = diamond;
+    terrain_[coordinateToIndex(ptof)] = diamond;
 }
 
 GLuint Terrain::getTextureInt(int i){
     if(i < 0 || i > 3){
-        return g_regions[0].texture;
+        return regions_[0].texture;
     }
-    return g_regions[i].texture;
+    return regions_[i].texture;
 }
