@@ -27,11 +27,11 @@ For refraction on water, we rendered the terrain that was below the water level 
 The program can be run with the cs123final executable, run with qmake, or can be edited in QtCreator using the .pro file.
 
 The following commands can be used:
-* ** D ** - toggles depth-of-field
-* ** M ** - displays the depth values
-* ** Left ** and ** Right ** arrows - change the focal range of the depth of field shader
-* ** Up ** and ** Down ** arrows - change the focal distance of the depth of field shader
-* ** O ** and ** P ** - decrease/increase the blur size of the depth of field shader
+<p>** D ** - toggles depth-of-field</p>
+<p>** M ** - displays the depth values</p>
+<p>** Left ** and ** Right ** arrows - change the focal range of the depth of field shader</p>
+<p>** Up ** and ** Down ** arrows - change the focal distance of the depth of field shader</p>
+<p>** O ** and ** P ** - decrease/increase the blur size of the depth of field shader</p>
 
 
 ## Credits:
