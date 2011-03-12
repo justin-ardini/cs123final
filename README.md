@@ -1,3 +1,5 @@
+# CS123 Final Project
+
 ## Summary:
 Our project implements a mountain lake using Qt, OpenGL & GLSL.  It is our final project for CS123: Introduction to Computer Graphics at Brown.
 
@@ -34,15 +36,12 @@ The following commands can be used:
 
 ## Credits:
 
-Depth of Field based on approach in Encelo's Blog:
+Depth of Field implementation based on approach in [Encelo's Blog](http://encelo.netsons.org/blog/2008/04/15/depth-of-field-reloaded/).
 This code is under General Public License (GPL)
-http://encelo.netsons.org/blog/2008/04/15/depth-of-field-reloaded/
 
-Skybox created by Hazel Whorley:
-http://www.hazelwhorley.com/textures.html
+Skybox created by [Hazel Whorley](http://www.hazelwhorley.com/textures.html)
 
-Normal map texture:
-http://i140.photobucket.com/albums/r3/kwistenbiebel1/water01_bumpmap.jpg
+[Normal map texture](http://i140.photobucket.com/albums/r3/kwistenbiebel1/water01_bumpmap.jpg)
 
 Special thanks to the CS123 TAs for being awesome and helping
 with numerous bugs!
