@@ -26,7 +26,7 @@ For refraction on water, we rendered the terrain that was below the water level 
 ## How to use:
 The program can be run with the cs123final executable, run with qmake, or can be edited in QtCreator using the .pro file.
 
-The following commands can be used:
+The following commands can be used:<br>
 ** D ** - toggles depth-of-field<br>
 ** M ** - displays the depth values<br>
 ** Left ** and ** Right ** arrows - change the focal range of the depth of field shader<br>
