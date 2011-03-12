@@ -41,11 +41,13 @@ This code is under General Public License (GPL)
 
 Skybox created by [Hazel Whorley](http://www.hazelwhorley.com/textures.html)
 
-[Normal map texture](http://i140.photobucket.com/albums/r3/kwistenbiebel1/water01_bumpmap.jpg)
+Normal map texture taken from <http://i140.photobucket.com/albums/r3/kwistenbiebel1/water01_bumpmap.jpg>.
 
 Special thanks to the CS123 TAs for being awesome and helping
 with numerous bugs!
 
+
+## License:
 
 Copyright (C) 2010  Justin Ardini and Hobart Reynolds
 
