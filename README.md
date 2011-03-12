@@ -37,9 +37,9 @@ The following commands can be used:
 ## Credits:
 
 Depth of Field implementation based on approach in [Encelo's Blog](http://encelo.netsons.org/blog/2008/04/15/depth-of-field-reloaded/).
-This code is under General Public License (GPL)
+This code is under General Public License (GPL).
 
-Skybox created by [Hazel Whorley](http://www.hazelwhorley.com/textures.html)
+Skybox created by [Hazel Whorley](http://www.hazelwhorley.com/textures.html).
 
 Normal map texture taken from <http://i140.photobucket.com/albums/r3/kwistenbiebel1/water01_bumpmap.jpg>.
 
